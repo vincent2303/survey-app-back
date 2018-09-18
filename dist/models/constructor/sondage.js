@@ -15,7 +15,7 @@ var sondageConstructor = function sondageConstructor(sequelize) {
     },
     date_creation: {
       allowNull: false,
-      type: Sequelize.STRING
+      type: Sequelize.DATEONLY
     }
   });
 

@@ -17,7 +17,7 @@ const remplissageConstructor = function (sequelize) {
     },
     date: {
       allowNull: false,
-      type: Sequelize.DATE,
+      type: Sequelize.DATEONLY,
     },
   });
   Remplissage.addRemplissage = function (id, sondage_id, user_id, date) {

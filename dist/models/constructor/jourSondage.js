@@ -17,7 +17,7 @@ var jourSondageConstructor = function jourSondageConstructor(sequelize) {
     },
     date_emmission: {
       allowNull: false,
-      type: Sequelize.DATE
+      type: Sequelize.DATEONLY
     }
   });
 

@@ -19,7 +19,7 @@ var remplissageConstructor = function remplissageConstructor(sequelize) {
     },
     date: {
       allowNull: false,
-      type: Sequelize.DATE
+      type: Sequelize.DATEONLY
     }
   });
 

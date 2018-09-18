@@ -14,7 +14,7 @@ const jourSondageConstructor = function (sequelize) {
     },
     date_emmission: {
       allowNull: false,
-      type: Sequelize.DATE,
+      type: Sequelize.DATEONLY,
     },
   });
   JourSondage.addJourSondage = function (sondage_id, date_emmission) {
