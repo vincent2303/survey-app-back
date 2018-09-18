@@ -102,8 +102,17 @@ router.get('/numberSondages', function (req, res) {
   });
 });
 router.get('/numberSondagesJour/:jour', function (req, res) {
-  console.log(req.params);
   Data.getNumberSondagesJour(req.params.jour, function (count) {
+    res.status(200).json(count);
+  });
+});
+router.get('/numberReponses', function (req, res) {
+  Data.getNumberReponses(function (count) {
+    res.status(200).json(count);
+  });
+});
+router.get('/numberReponsesJour/:jour', function (req, res) {
+  Data.getNumberReponsesJour(req.params.jour, function (count) {
     res.status(200).json(count);
   });
 });

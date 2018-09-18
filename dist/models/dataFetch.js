@@ -1,10 +1,6 @@
 "use strict";
 
 var Models = require('../models/index');
-/* const getNumberSondages = new Promise(function (resolve) {
-  resolve(Models.Remplissage.count().then(count => count));
-}); */
-
 
 var getNumberSondages = function getNumberSondages(next) {
   Models.Remplissage.count().then(function (count) {
@@ -22,9 +18,30 @@ var getNumberSondagesJour = function getNumberSondagesJour(jour, next) {
   });
 };
 
+var getNumberReponses = function getNumberReponses(next) {
+  Models.Reponse.count().then(function (count) {
+    next(count);
+  });
+};
+
+var getNumberReponsesJour = function getNumberReponsesJour(jour, next) {
+  Models.Reponse.count({
+    include: [{
+      model: Models.Remplissage,
+      where: {
+        date: jour
+      }
+    }]
+  }).then(function (count) {
+    next(count);
+  });
+};
+
 var dataFetch = {
   getNumberSondages: getNumberSondages,
-  getNumberSondagesJour: getNumberSondagesJour
+  getNumberSondagesJour: getNumberSondagesJour,
+  getNumberReponses: getNumberReponses,
+  getNumberReponsesJour: getNumberReponsesJour
 };
 module.exports = dataFetch;
 //# sourceMappingURL=dataFetch.js.map

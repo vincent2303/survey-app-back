@@ -111,5 +111,16 @@ router.get('/numberSondagesJour/:jour', (req, res) => {
   });
 });
 
+router.get('/numberReponses', (req, res) => {
+  Data.getNumberReponses((count) => {
+    res.status(200).json(count);
+  });
+});
+
+router.get('/numberReponsesJour/:jour', (req, res) => {
+  Data.getNumberReponsesJour(req.params.jour, (count) => {
+    res.status(200).json(count);
+  });
+});
 
 module.exports = router;
