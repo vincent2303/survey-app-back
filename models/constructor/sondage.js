@@ -13,7 +13,7 @@ const sondageConstructor = function (sequelize) {
     },
     date_creation: {
       allowNull: false,
-      type: Sequelize.STRING,
+      type: Sequelize.DATEONLY,
     },
   });
   Sondage.addSondage = function (id, author, date_creation) {

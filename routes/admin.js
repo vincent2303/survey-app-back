@@ -20,6 +20,9 @@ const checkToken = require('../controllers/adminCheckToken');
 // Récupère les models
 const Models = require('../models/index');
 
+// Récupère les fonctions de recherche de données
+const Data = require('../models/dataFetch');
+
 // L'administrateur peut poster un User pour l'ajouter dans la DB
 // Les attributs de l'utilisateurs sont dans le body de la requête
 router.post('/createUser', (req, res) => {
@@ -94,6 +97,19 @@ router.post('/singlePost',
     Models.User.addUser(user.firstName, user.lastName, user.email, () => {
       res.send("single user added");
     });
+  }); 
+
+router.get('/numberSondages', (req, res) => {
+  Data.getNumberSondages((count) => {
+    res.status(200).json(count);
   });
+});
+
+router.get('/numberSondagesJour/:jour', (req, res) => {
+  Data.getNumberSondagesJour(req.params.jour, (count) => {
+    res.status(200).json(count);
+  });
+});
+
 
 module.exports = router;

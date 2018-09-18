@@ -20,23 +20,35 @@ router.get('/getSondage', userCheckToken, function (req, res) {
       id: remplissage_id
     }
   }).then(function (remplissage) {
-    if (!remplissage) {
-      Models.Question.findAll({
-        where: {
-          sondage_id: sondage_id
-        }
-      }).then(function (questions) {
-        var questionList = [];
-        questions.forEach(function (question) {
-          questionList.push(question);
-        });
-        serverResponse.questionList = questionList;
-        res.json(serverResponse);
+    Models.Question.findAll({
+      where: {
+        sondage_id: sondage_id
+      }
+    }).then(function (questions) {
+      var questionList = [];
+      questions.forEach(function (question) {
+        questionList.push(question);
       });
-    } else {
-      serverResponse.alreadyAnswered = true;
-      res.json(serverResponse);
-    }
+      serverResponse.questionList = questionList; // Si le sondage a déjà été remplis, on renvois les réponses
+
+      if (remplissage) {
+        serverResponse.alreadyAnswered = true;
+        Models.Reponse.findAll({
+          where: {
+            remplissage_id: remplissage_id
+          }
+        }).then(function (reponses) {
+          var reponseList = [];
+          reponses.forEach(function (reponse) {
+            reponseList.push(reponse);
+          });
+          serverResponse.reponseList = reponseList;
+          res.json(serverResponse);
+        });
+      } else {
+        res.json(serverResponse);
+      }
+    });
   });
 }); // front send un post avec header et dans le body un answered_questions (cf index.js)
 
@@ -58,7 +70,7 @@ router.post('/answerSondage', userCheckToken, function (req, res) {
           answered_questions: req.body.answered_questions
         };
         user.answerSondage(sondage);
-        res.send({
+        res.status(200).send({
           msg: "merci d'avoir repondue :)"
         });
       });
