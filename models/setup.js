@@ -28,6 +28,7 @@ Admin.sync({ force: true }).then(() => {
         id: "fake_sondage_id",
         author: "fake_author",
         date_creation: Date.now(),
+        name: "fake_name",
       });
     }).then(() => {
       JourSondage.sync({ force: true }).then(() => {
@@ -59,20 +60,20 @@ Admin.sync({ force: true }).then(() => {
               date: Date.now(),
             });
           }).then(() => {
-            Reponse.sync({ force: true }).then(() => {
-              Reponse.create({
-                id: "fake_reponse_id",
+            Commentaire.sync({ force: true }).then(() => {
+              Commentaire.create({
+                id: "fake_commentaire_id",
                 remplissage_id: "fake_remplissage_id",
-                question_id: "fake_question_id",
-                valeur: 0,
+                thematique_id: "fake_thematique_id",
+                commentaire: "fake_commentaire",
               });
             }).then(() => {
-              Commentaire.sync({ force: true }).then(() => {
-                Commentaire.create({
-                  id: "fake_commentaire_id",
+              Reponse.sync({ force: true }).then(() => {
+                Reponse.create({
+                  id: "fake_reponse_id",
                   remplissage_id: "fake_remplissage_id",
-                  thematique_id: "fake_thematique_id",
-                  commentaire: "fake_commentaire",
+                  question_id: "fake_question_id",
+                  valeur: 0,
                 });
               }).then(() => {
                 console.log("");

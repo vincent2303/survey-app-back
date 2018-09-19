@@ -6,9 +6,32 @@ var Models = require("./index"); // const { User } = Models;
 // });
 
 
-Models.Admin.addAdmin('foutre', 'mdp', function () {
-  return console.log("pouet");
-}); // const fake_sondage = [
+Models.Sondage.sync({
+  force: true
+}).then(function () {
+  Models.Sondage.create({
+    id: "fake_sondage_id",
+    author: "fake_author",
+    date_creation: Date.now()
+  });
+}).then(function () {
+  Models.Commentaire.sync({
+    force: true
+  }).then(function () {
+    Models.Commentaire.create({
+      id: "fake_commentaire_id",
+      remplissage_id: "fake_remplissage_id",
+      thematique_id: "fake_thematique_id",
+      commentaire: "fake_commentaire"
+    });
+  }).then(function () {
+    console.log("");
+    console.log("");
+    console.log(" ********* toutes les tables ont été crée *********");
+    console.log("");
+  });
+}); // Models.Admin.addAdmin('foutre', 'mdp', () => console.log("pouet"));
+// const fake_sondage = [
 //   {
 //     name: "repas",
 //     questions: [

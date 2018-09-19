@@ -22,7 +22,6 @@ router.get('/getSondage',
         questions.forEach((question) => {
           const quest = JSON.parse(JSON.stringify(question));
           delete quest.thematique;
-          console.log("question    ", quest);
           if (!thematiqueList.get(question.dataValues.thematique.dataValues.id)) {
             thematiqueList.set(
               question.dataValues.thematique.dataValues.id, 
@@ -35,13 +34,11 @@ router.get('/getSondage',
           } else {
             newList.questionList = [quest];
           }
-          console.log("plip    ", newList);
           thematiqueList.set(question.dataValues.thematique.dataValues.id, newList); 
         });
         thematiqueList.forEach((elem) => {
           questionList.push(elem);
         });
-        console.log(questionList);
         serverResponse.thematiqueList = questionList; 
 
         // Si le sondage a déjà été remplis, on renvois les réponses
@@ -56,7 +53,10 @@ router.get('/getSondage',
             res.json(serverResponse);
           }); 
         } else {
-          res.json(serverResponse);
+          Models.Sondage.findOne({ where: { id: sondage_id } }).then((sondage) => {
+            serverResponse.sondageName = sondage.dataValues.name;
+            res.json(serverResponse);
+          }); 
         }
       }); 
     });

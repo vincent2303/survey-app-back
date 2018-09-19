@@ -40,7 +40,8 @@ Admin.sync({
       Sondage.create({
         id: "fake_sondage_id",
         author: "fake_author",
-        date_creation: Date.now()
+        date_creation: Date.now(),
+        name: "fake_name"
       });
     }).then(function () {
       JourSondage.sync({
@@ -80,24 +81,24 @@ Admin.sync({
               date: Date.now()
             });
           }).then(function () {
-            Reponse.sync({
+            Commentaire.sync({
               force: true
             }).then(function () {
-              Reponse.create({
-                id: "fake_reponse_id",
+              Commentaire.create({
+                id: "fake_commentaire_id",
                 remplissage_id: "fake_remplissage_id",
-                question_id: "fake_question_id",
-                valeur: 0
+                thematique_id: "fake_thematique_id",
+                commentaire: "fake_commentaire"
               });
             }).then(function () {
-              Commentaire.sync({
+              Reponse.sync({
                 force: true
               }).then(function () {
-                Commentaire.create({
-                  id: "fake_commentaire_id",
+                Reponse.create({
+                  id: "fake_reponse_id",
                   remplissage_id: "fake_remplissage_id",
-                  thematique_id: "fake_thematique_id",
-                  commentaire: "fake_commentaire"
+                  question_id: "fake_question_id",
+                  valeur: 0
                 });
               }).then(function () {
                 console.log("");
