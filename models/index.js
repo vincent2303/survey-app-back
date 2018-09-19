@@ -90,6 +90,11 @@ Admin.prototype.createSondage = function (sondage) {
 //       question_id: "...",
 //       answer: "...",
 //     },
+//   answered_commentaires: [
+//     {
+//      thematique_id: "...",
+//      answer: "...",
+//     },
 //   ],
 // };
 // uniquement les questions auxquelles l'ut a repondue, pas de question sans reponses
