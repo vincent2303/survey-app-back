@@ -101,6 +101,7 @@ Admin.prototype.createSondage = function (sondage) {
 User.prototype.answerSondage = function (sondage) {
   const remplissage_id = sondage.remplissage_id;
   Remplissage.addRemplissage(remplissage_id, sondage.sondage_id, this.id, Date.now());
+  console.log(sondage);
   sondage.answered_questions.forEach((question) => {
     Reponse.addReponse(remplissage_id, question.question_id, question.answer);
   });

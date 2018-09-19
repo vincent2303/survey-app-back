@@ -56,12 +56,15 @@ router.get('/getSondage',
         if (remplissage) {
           serverResponse.alreadyAnswered = true;
           Models.Reponse.findAll({ where: { remplissage_id: remplissage_id } }).then((reponses) => {
-            const reponseList = [];
-            reponses.forEach((reponse) => {
-              reponseList.push(reponse);
-            }); 
-            serverResponse.reponseList = reponseList;
-            res.json(serverResponse);
+            Models.Sondage.findOne({ where: { id: sondage_id } }).then((sondage) => {
+              serverResponse.sondageName = sondage.dataValues.name;
+              const reponseList = [];
+              reponses.forEach((reponse) => {
+                reponseList.push(reponse);
+              }); 
+              serverResponse.reponseList = reponseList;
+              res.json(serverResponse);
+            });
           }); 
         } else {
           Models.Sondage.findOne({ where: { id: sondage_id } }).then((sondage) => {
@@ -79,6 +82,7 @@ router.post('/answerSondage',
   userCheckToken,
   (req, res) => {
     const { user_id, sondage_id, remplissage_id } = req.user;
+    console.log(req.body.answered_questions);
     Models.Remplissage.findById(remplissage_id).then((remplissage) => {
       if (remplissage) {
         res.send({ msg: "Vous aviez deja repondue au sondage..." });

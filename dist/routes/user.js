@@ -72,12 +72,19 @@ router.get('/getSondage', userCheckToken, function (req, res) {
             remplissage_id: remplissage_id
           }
         }).then(function (reponses) {
-          var reponseList = [];
-          reponses.forEach(function (reponse) {
-            reponseList.push(reponse);
+          Models.Sondage.findOne({
+            where: {
+              id: sondage_id
+            }
+          }).then(function (sondage) {
+            serverResponse.sondageName = sondage.dataValues.name;
+            var reponseList = [];
+            reponses.forEach(function (reponse) {
+              reponseList.push(reponse);
+            });
+            serverResponse.reponseList = reponseList;
+            res.json(serverResponse);
           });
-          serverResponse.reponseList = reponseList;
-          res.json(serverResponse);
         });
       } else {
         Models.Sondage.findOne({
@@ -98,6 +105,7 @@ router.post('/answerSondage', userCheckToken, function (req, res) {
       user_id = _req$user2.user_id,
       sondage_id = _req$user2.sondage_id,
       remplissage_id = _req$user2.remplissage_id;
+  console.log(req.body.answered_questions);
   Models.Remplissage.findById(remplissage_id).then(function (remplissage) {
     if (remplissage) {
       res.send({

@@ -127,6 +127,11 @@ Admin.prototype.createSondage = function (sondage) {
 //       question_id: "...",
 //       answer: "...",
 //     },
+//   answered_commentaires: [
+//     {
+//      thematique_id: "...",
+//      answer: "...",
+//     },
 //   ],
 // };
 // uniquement les questions auxquelles l'ut a repondue, pas de question sans reponses
@@ -135,6 +140,7 @@ Admin.prototype.createSondage = function (sondage) {
 User.prototype.answerSondage = function (sondage) {
   var remplissage_id = sondage.remplissage_id;
   Remplissage.addRemplissage(remplissage_id, sondage.sondage_id, this.id, Date.now());
+  console.log(sondage);
   sondage.answered_questions.forEach(function (question) {
     Reponse.addReponse(remplissage_id, question.question_id, question.answer);
   });
