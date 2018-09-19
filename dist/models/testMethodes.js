@@ -6,7 +6,9 @@ var Models = require("./index"); // const { User } = Models;
 // });
 
 
-Models.Admin.addAdmin('foutre', 'mdp'); // const fake_sondage = [
+Models.Admin.addAdmin('foutre', 'mdp', function () {
+  return console.log("pouet");
+}); // const fake_sondage = [
 //   {
 //     name: "repas",
 //     questions: [

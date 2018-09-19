@@ -1,8 +1,8 @@
 const Sequelize = require('sequelize');
 const id_generator = require('../../custom_module/id_generator');
 
-const reponseConstructor = function (sequelize) {
-  const Reponse = sequelize.define('reponse', {
+const commentaireConstructor = function (sequelize) {
+  const Commentaire = sequelize.define('commentaire', {
     id: {
       allowNull: false,
       type: Sequelize.STRING,
@@ -12,26 +12,26 @@ const reponseConstructor = function (sequelize) {
       allowNull: false,
       type: Sequelize.STRING,
     },
-    question_id: {
+    thematique_id: {
       allowNull: false,
       type: Sequelize.STRING,
     },
-    valeur: {
+    commentaire: {
       allowNull: false,
-      type: Sequelize.INTEGER,
+      type: Sequelize.STRING,
     },
   });
-  Reponse.addReponse = function (remplissage_id, question_id, valeur) {
-    Reponse.sync().then(() => {
-      Reponse.create({
+  Commentaire.addCommentaire = function (remplissage_id, thematique_id, commentaire) {
+    Commentaire.sync().then(() => {
+      Commentaire.create({
         id: id_generator(),
         remplissage_id: remplissage_id,
-        question_id: question_id,
-        valeur: valeur,
+        thematique_id: thematique_id,
+        commentaire: commentaire,
       });
     });
   };
-  return Reponse;
+  return Commentaire;
 };
 
-module.exports = reponseConstructor;
+module.exports = commentaireConstructor;

@@ -21,15 +21,40 @@ router.get('/getSondage', userCheckToken, function (req, res) {
     }
   }).then(function (remplissage) {
     Models.Question.findAll({
+      include: [{
+        model: Models.Thematique
+      }],
       where: {
         sondage_id: sondage_id
       }
     }).then(function (questions) {
       var questionList = [];
+      var thematiqueList = new Map();
       questions.forEach(function (question) {
-        questionList.push(question);
+        var quest = JSON.parse(JSON.stringify(question));
+        delete quest.thematique;
+        console.log("question    ", quest);
+
+        if (!thematiqueList.get(question.dataValues.thematique.dataValues.id)) {
+          thematiqueList.set(question.dataValues.thematique.dataValues.id, question.dataValues.thematique.dataValues);
+        }
+
+        var newList = thematiqueList.get(question.dataValues.thematique.dataValues.id);
+
+        if (newList.questionList) {
+          newList.questionList.push(quest);
+        } else {
+          newList.questionList = [quest];
+        }
+
+        console.log("plip    ", newList);
+        thematiqueList.set(question.dataValues.thematique.dataValues.id, newList);
       });
-      serverResponse.questionList = questionList; // Si le sondage a déjà été remplis, on renvois les réponses
+      thematiqueList.forEach(function (elem) {
+        questionList.push(elem);
+      });
+      console.log(questionList);
+      serverResponse.thematiqueList = questionList; // Si le sondage a déjà été remplis, on renvois les réponses
 
       if (remplissage) {
         serverResponse.alreadyAnswered = true;
@@ -60,14 +85,15 @@ router.post('/answerSondage', userCheckToken, function (req, res) {
   Models.Remplissage.findById(remplissage_id).then(function (remplissage) {
     if (remplissage) {
       res.send({
-        msg: "Vous aviez dejas repondue au sondage..."
+        msg: "Vous aviez deja repondue au sondage..."
       });
     } else {
       Models.User.findById(user_id).then(function (user) {
         var sondage = {
           sondage_id: sondage_id,
           remplissage_id: remplissage_id,
-          answered_questions: req.body.answered_questions
+          answered_questions: req.body.answered_questions,
+          answered_commentaires: req.body.answered_commentaires
         };
         user.answerSondage(sondage);
         res.status(200).send({

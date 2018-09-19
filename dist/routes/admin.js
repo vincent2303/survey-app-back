@@ -96,13 +96,13 @@ router.post('/singlePost', checkToken, function (req, res) {
     res.send("single user added");
   });
 });
-router.get('/numberSondages', function (req, res) {
-  Data.getNumberSondages(function (count) {
+router.get('/numberRemplissages', function (req, res) {
+  Data.getNumberRemplissages(function (count) {
     res.status(200).json(count);
   });
 });
-router.get('/numberSondagesJour/:jour', function (req, res) {
-  Data.getNumberSondagesJour(req.params.jour, function (count) {
+router.get('/numberRemplissagesJour/:jour', function (req, res) {
+  Data.getNumberRemplissagesJour(req.params.jour, function (count) {
     res.status(200).json(count);
   });
 });

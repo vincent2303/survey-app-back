@@ -9,7 +9,8 @@ var Sondage = Models.Sondage,
     Question = Models.Question,
     Remplissage = Models.Remplissage,
     Admin = Models.Admin,
-    JourSondage = Models.JourSondage; // setup: créer les tables avec 1 fausse valeur dans chaque
+    JourSondage = Models.JourSondage,
+    Commentaire = Models.Commentaire; // setup: créer les tables avec 1 fausse valeur dans chaque
 
 Admin.sync({
   force: true
@@ -86,13 +87,24 @@ Admin.sync({
                 id: "fake_reponse_id",
                 remplissage_id: "fake_remplissage_id",
                 question_id: "fake_question_id",
-                valeur: "fake_valeur"
+                valeur: 0
               });
             }).then(function () {
-              console.log("");
-              console.log("");
-              console.log(" ********* toutes les tables ont été crée *********");
-              console.log("");
+              Commentaire.sync({
+                force: true
+              }).then(function () {
+                Commentaire.create({
+                  id: "fake_commentaire_id",
+                  remplissage_id: "fake_remplissage_id",
+                  thematique_id: "fake_thematique_id",
+                  commentaire: "fake_commentaire"
+                });
+              }).then(function () {
+                console.log("");
+                console.log("");
+                console.log(" ********* toutes les tables ont été crée *********");
+                console.log("");
+              });
             });
           });
         });

@@ -2,13 +2,13 @@
 
 var Models = require('../models/index');
 
-var getNumberSondages = function getNumberSondages(next) {
+var getNumberRemplissages = function getNumberRemplissages(next) {
   Models.Remplissage.count().then(function (count) {
     next(count);
   });
 };
 
-var getNumberSondagesJour = function getNumberSondagesJour(jour, next) {
+var getNumberRemplissagesJour = function getNumberRemplissagesJour(jour, next) {
   Models.Remplissage.count({
     where: {
       date: jour
@@ -38,8 +38,8 @@ var getNumberReponsesJour = function getNumberReponsesJour(jour, next) {
 };
 
 var dataFetch = {
-  getNumberSondages: getNumberSondages,
-  getNumberSondagesJour: getNumberSondagesJour,
+  getNumberRemplissages: getNumberRemplissages,
+  getNumberRemplissagesJour: getNumberRemplissagesJour,
   getNumberReponses: getNumberReponses,
   getNumberReponsesJour: getNumberReponsesJour
 };

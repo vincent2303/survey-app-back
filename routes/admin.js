@@ -99,14 +99,14 @@ router.post('/singlePost',
     });
   }); 
 
-router.get('/numberSondages', (req, res) => {
-  Data.getNumberSondages((count) => {
+router.get('/numberRemplissages', (req, res) => {
+  Data.getNumberRemplissages((count) => {
     res.status(200).json(count);
   });
 });
 
-router.get('/numberSondagesJour/:jour', (req, res) => {
-  Data.getNumberSondagesJour(req.params.jour, (count) => {
+router.get('/numberRemplissagesJour/:jour', (req, res) => {
+  Data.getNumberRemplissagesJour(req.params.jour, (count) => {
     res.status(200).json(count);
   });
 });
