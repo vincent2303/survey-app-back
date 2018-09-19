@@ -2,11 +2,23 @@
 
 var express = require('express');
 
+var router = express.Router(); // Le body Parser permet d'acceder aux variable envoyés dans le body
+
+var bodyParser = require('body-parser');
+
+router.use(bodyParser.json());
+router.use(express.urlencoded({
+  extended: false
+}));
+
+var morgan = require('morgan');
+
+router.use(morgan('dev'));
+
 var Models = require('../models/index');
 
-var userCheckToken = require('../controllers/userCheckToken');
+var userCheckToken = require('../controllers/userCheckToken'); // front send un get avec header
 
-var router = express.Router(); // front send un get avec header
 
 router.get('/getSondage', userCheckToken, function (req, res) {
   var _req$user = req.user,
@@ -116,6 +128,15 @@ router.post('/changeFreq', userCheckToken, function (req, res) {
     }).then(res.send({
       msg: "Mail Intensity changed"
     }));
+  }
+});
+router.use(function (err, req, res, next) {
+  console.log("error: ", err.name);
+
+  if (err.name === 'UnauthorizedError') {
+    res.status(401).json({
+      message: 'Unauthorized. Invalid token!'
+    });
   }
 });
 module.exports = router;

@@ -6,14 +6,23 @@ var router = express.Router(); // Le body Parser permet d'acceder aux variable e
 
 var bodyParser = require('body-parser');
 
-router.use(bodyParser.json()); // Authentification
+router.use(bodyParser.json());
+router.use(express.urlencoded({
+  extended: false
+}));
+
+var morgan = require('morgan'); // Authentification
+
 
 var passport = require('passport');
 
 var adminLoginStrategy = require('../passport-config/adminStrategy');
 
 passport.use(adminLoginStrategy);
-passport.initialize(); // Authentification controllers
+passport.initialize(); // App variables
+
+var env_var = require('../variables'); // Authentification controllers
+
 
 var checkToken = require('../controllers/adminCheckToken'); // Récupère les models
 
@@ -21,9 +30,10 @@ var checkToken = require('../controllers/adminCheckToken'); // Récupère les mo
 var Models = require('../models/index'); // Récupère les fonctions de recherche de données
 
 
-var Data = require('../models/dataFetch'); // L'administrateur peut poster un User pour l'ajouter dans la DB
-// Les attributs de l'utilisateurs sont dans le body de la requête
+var Data = require('../models/dataFetch');
 
+router.use(morgan('dev')); // L'administrateur peut poster un User pour l'ajouter dans la DB
+// Les attributs de l'utilisateurs sont dans le body de la requête
 
 router.post('/createUser', function (req, res) {
   // On vérifie que les données minmums pour créer un utilisateur sont bien présentes
@@ -96,25 +106,45 @@ router.post('/singlePost', checkToken, function (req, res) {
     res.send("single user added");
   });
 });
-router.get('/numberRemplissages', function (req, res) {
+router.post('/changeSondage', checkToken, function (req, res) {
+  if (!req.body.next_sondage) {
+    console.log("/!\\ ERROR : Inccorect body");
+    res.status(400).send("Bad Request : The body doesnt contain next_sondage ! ");
+  } else {
+    env_var.next_sondage = req.body.next_sondage;
+    console.log("Changed the sondage to sondage number: ", req.body);
+    res.status(200).json(env_var.next_sondage);
+  }
+});
+router.get('/numberRemplissages', checkToken, function (req, res) {
+  console.log(env_var.next_sondage);
   Data.getNumberRemplissages(function (count) {
     res.status(200).json(count);
   });
 });
-router.get('/numberRemplissagesJour/:jour', function (req, res) {
+router.get('/numberRemplissagesJour/:jour', checkToken, function (req, res) {
   Data.getNumberRemplissagesJour(req.params.jour, function (count) {
     res.status(200).json(count);
   });
 });
-router.get('/numberReponses', function (req, res) {
+router.get('/numberReponses', checkToken, function (req, res) {
   Data.getNumberReponses(function (count) {
     res.status(200).json(count);
   });
 });
-router.get('/numberReponsesJour/:jour', function (req, res) {
+router.get('/numberReponsesJour/:jour', checkToken, function (req, res) {
   Data.getNumberReponsesJour(req.params.jour, function (count) {
     res.status(200).json(count);
   });
+});
+router.use(function (err, req, res, next) {
+  console.log("error: ", err.name);
+
+  if (err.name === 'UnauthorizedError') {
+    res.status(401).json({
+      message: 'Unauthorized. Invalid token!'
+    });
+  }
 });
 module.exports = router;
 //# sourceMappingURL=admin.js.map

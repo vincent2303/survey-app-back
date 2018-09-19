@@ -18,7 +18,7 @@ Admin.sync({ force: true }).then(() => {
       id: "fake_user_id",
       firstName: "fake_first_name",
       lastName: "fake_last_name",
-      email: "fake_user_email",
+      email: "fake_user_email@fake_mail.bite",
       lastMailDate: Date.now(),
       mailIntensity: 1,
     });

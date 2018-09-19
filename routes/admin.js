@@ -2,10 +2,14 @@ const express = require('express');
 
 const router = express.Router();
 
+
 // Le body Parser permet d'acceder aux variable envoyés dans le body
 const bodyParser = require('body-parser');
 
 router.use(bodyParser.json());
+router.use(express.urlencoded({ extended: false }));
+
+const morgan = require('morgan');
 
 // Authentification
 const passport = require('passport');
@@ -13,6 +17,9 @@ const adminLoginStrategy = require('../passport-config/adminStrategy');
 
 passport.use(adminLoginStrategy);
 passport.initialize();
+
+// App variables
+const env_var = require('../variables');
 
 // Authentification controllers
 const checkToken = require('../controllers/adminCheckToken');
@@ -22,6 +29,9 @@ const Models = require('../models/index');
 
 // Récupère les fonctions de recherche de données
 const Data = require('../models/dataFetch');
+
+router.use(morgan('dev'));
+
 
 // L'administrateur peut poster un User pour l'ajouter dans la DB
 // Les attributs de l'utilisateurs sont dans le body de la requête
@@ -99,28 +109,47 @@ router.post('/singlePost',
     });
   }); 
 
-router.get('/numberRemplissages', (req, res) => {
+router.post('/changeSondage', checkToken, (req, res) => {
+  if (!req.body.next_sondage) {
+    console.log("/!\\ ERROR : Inccorect body");
+    res.status(400).send("Bad Request : The body doesnt contain next_sondage ! ");
+  } else {
+    env_var.next_sondage = req.body.next_sondage;
+    console.log("Changed the sondage to sondage number: ", req.body);
+    res.status(200).json(env_var.next_sondage);
+  }
+});
+
+router.get('/numberRemplissages', checkToken, (req, res) => {
+  console.log(env_var.next_sondage);
   Data.getNumberRemplissages((count) => {
     res.status(200).json(count);
   });
 });
 
-router.get('/numberRemplissagesJour/:jour', (req, res) => {
+router.get('/numberRemplissagesJour/:jour', checkToken, (req, res) => {
   Data.getNumberRemplissagesJour(req.params.jour, (count) => {
     res.status(200).json(count);
   });
 });
 
-router.get('/numberReponses', (req, res) => {
+router.get('/numberReponses', checkToken, (req, res) => {
   Data.getNumberReponses((count) => {
     res.status(200).json(count);
   });
 });
 
-router.get('/numberReponsesJour/:jour', (req, res) => {
+router.get('/numberReponsesJour/:jour', checkToken, (req, res) => {
   Data.getNumberReponsesJour(req.params.jour, (count) => {
     res.status(200).json(count);
   });
+});
+
+router.use((err, req, res, next) => {
+  console.log("error: ", err.name);
+  if (err.name === 'UnauthorizedError') {
+    res.status(401).json({ message: 'Unauthorized. Invalid token!' });
+  }
 });
 
 module.exports = router;

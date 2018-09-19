@@ -6,29 +6,7 @@ const Models = require("./index");
 //  console.log(user.generateJwt("jo03w008v7y3ye7gay01"));
 // });
 
-Models.Sondage.sync({ force: true }).then(() => {
-  Models.Sondage.create({
-    id: "fake_sondage_id",
-    author: "fake_author",
-    date_creation: Date.now(),
-  });
-}).then(() => {
-  Models.Commentaire.sync({ force: true }).then(() => {
-    Models.Commentaire.create({
-      id: "fake_commentaire_id",
-      remplissage_id: "fake_remplissage_id",
-      thematique_id: "fake_thematique_id",
-      commentaire: "fake_commentaire",
-    });
-  }).then(() => {
-    console.log("");
-    console.log("");
-    console.log(" ********* toutes les tables ont été crée *********");
-    console.log("");
-  });
-});
-
-// Models.Admin.addAdmin('foutre', 'mdp', () => console.log("pouet"));
+Models.Admin.addAdmin('foutre', 'mdp', () => console.log("pouet"));
 // const fake_sondage = [
 //   {
 //     name: "repas",

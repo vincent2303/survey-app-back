@@ -14,10 +14,9 @@ app.use(cors());
 console.log('Starting scheduler');
 scheduler();
 
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors());
-
 
 app.use('/user', usersRouter);
 app.use('/admin', adminRouter);
@@ -28,3 +27,5 @@ const server = http.createServer(app);
 
 console.log(`server starting on port: ${env.port}`);
 server.listen(env.port);
+
+module.exports = app;
