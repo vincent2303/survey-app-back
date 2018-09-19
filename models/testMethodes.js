@@ -6,7 +6,7 @@ const Models = require("./index");
 //  console.log(user.generateJwt("jo03w008v7y3ye7gay01"));
 // });
 
-Models.Admin.addAdmin('foutre', 'mdp');
+Models.Admin.addAdmin('foutre', 'mdp', () => console.log("pouet"));
 // const fake_sondage = [
 //   {
 //     name: "repas",

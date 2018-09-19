@@ -11,6 +11,7 @@ const remplissageConstructor = require('./constructor/remplissage');
 const reponseConstructor = require('./constructor/reponse');
 const sondageConstructor = require('./constructor/sondage');
 const thematiqueConstructor = require('./constructor/thematique');
+const commentaireConstructor = require('./constructor/commentaire');
 
 // sequelize connection
 const sequelize = new Sequelize(env.database, env.username, env.password, {
@@ -34,6 +35,7 @@ const Remplissage = remplissageConstructor(sequelize);
 const Reponse = reponseConstructor(sequelize);
 const Sondage = sondageConstructor(sequelize);
 const Thematique = thematiqueConstructor(sequelize);
+const Commentaire = commentaireConstructor(sequelize);
 
 // Foreign keys
 Question.belongsTo(Sondage, { foreignKey: 'sondage_id', targetKey: 'id' });
@@ -43,6 +45,8 @@ Reponse.belongsTo(Remplissage, { foreignKey: 'remplissage_id', targetKey: 'id' }
 Remplissage.belongsTo(Sondage, { foreignKey: 'sondage_id', targetKey: 'id' });
 Remplissage.belongsTo(User, { foreignKey: 'user_id', targetKey: 'id' });
 Question.belongsTo(Thematique, { foreignKey: 'thematique_id', targetKey: 'id' });
+Commentaire.belongsTo(Thematique, { foreignKey: 'thematique_id', targetKey: 'id' });
+Commentaire.belongsTo(Remplissage, { foreignKey: 'remplissage_id', targetKey: 'id' });
 
 // --------  instance method ----------
 
@@ -95,6 +99,9 @@ User.prototype.answerSondage = function (sondage) {
   sondage.answered_questions.forEach((question) => {
     Reponse.addReponse(remplissage_id, question.question_id, question.answer);
   });
+  sondage.answered_commentaires.forEach((commentaire) => {
+    Commentaire.addCommentaire(remplissage_id, commentaire.thematique_id, commentaire.answer);
+  });
 };
 
 const Models = {
@@ -106,6 +113,7 @@ const Models = {
   Question: Question,
   Reponse: Reponse,
   Thematique: Thematique,
+  Commentaire: Commentaire,
 };
 
 

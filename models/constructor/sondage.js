@@ -7,6 +7,10 @@ const sondageConstructor = function (sequelize) {
       type: Sequelize.STRING,
       primaryKey: true,
     },
+    name: {
+      allowNull: false,
+      type: Sequelize.STRING,
+    },
     author: {
       allowNull: false,
       type: Sequelize.STRING,
@@ -16,10 +20,11 @@ const sondageConstructor = function (sequelize) {
       type: Sequelize.DATEONLY,
     },
   });
-  Sondage.addSondage = function (id, author, date_creation) {
+  Sondage.addSondage = function (id, author, date_creation, name) {
     Sondage.sync().then(() => {
       Sondage.create({
         id: id,
+        name: name,
         author: author,
         date_creation: date_creation,
       });

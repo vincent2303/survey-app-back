@@ -21,7 +21,9 @@ var reponseConstructor = require('./constructor/reponse');
 
 var sondageConstructor = require('./constructor/sondage');
 
-var thematiqueConstructor = require('./constructor/thematique'); // sequelize connection
+var thematiqueConstructor = require('./constructor/thematique');
+
+var commentaireConstructor = require('./constructor/commentaire'); // sequelize connection
 
 
 var sequelize = new Sequelize(env.database, env.username, env.password, {
@@ -43,7 +45,8 @@ var Question = questionConstructor(sequelize);
 var Remplissage = remplissageConstructor(sequelize);
 var Reponse = reponseConstructor(sequelize);
 var Sondage = sondageConstructor(sequelize);
-var Thematique = thematiqueConstructor(sequelize); // Foreign keys
+var Thematique = thematiqueConstructor(sequelize);
+var Commentaire = commentaireConstructor(sequelize); // Foreign keys
 
 Question.belongsTo(Sondage, {
   foreignKey: 'sondage_id',
@@ -71,6 +74,14 @@ Remplissage.belongsTo(User, {
 });
 Question.belongsTo(Thematique, {
   foreignKey: 'thematique_id',
+  targetKey: 'id'
+});
+Commentaire.belongsTo(Thematique, {
+  foreignKey: 'thematique_id',
+  targetKey: 'id'
+});
+Commentaire.belongsTo(Remplissage, {
+  foreignKey: 'remplissage_id',
   targetKey: 'id'
 }); // --------  instance method ----------
 // structure input:
@@ -127,6 +138,9 @@ User.prototype.answerSondage = function (sondage) {
   sondage.answered_questions.forEach(function (question) {
     Reponse.addReponse(remplissage_id, question.question_id, question.answer);
   });
+  sondage.answered_commentaires.forEach(function (commentaire) {
+    Commentaire.addCommentaire(remplissage_id, commentaire.thematique_id, commentaire.answer);
+  });
 };
 
 var Models = {
@@ -137,7 +151,8 @@ var Models = {
   Remplissage: Remplissage,
   Question: Question,
   Reponse: Reponse,
-  Thematique: Thematique
+  Thematique: Thematique,
+  Commentaire: Commentaire
 }; // exemple d'update
 // User.update({firstName:"Jean UPDATED :) "},{where:{id:"7k6ngokwvdpjueo7yv3i"}})
 // exemple findById

@@ -1,7 +1,7 @@
 const Models = require("./index");
 
 const { 
-  Sondage, Thematique, User, Reponse, Question, Remplissage, Admin, JourSondage, 
+  Sondage, Thematique, User, Reponse, Question, Remplissage, Admin, JourSondage, Commentaire,
 } = Models;
 
 // setup: créer les tables avec 1 fausse valeur dans chaque
@@ -64,13 +64,22 @@ Admin.sync({ force: true }).then(() => {
                 id: "fake_reponse_id",
                 remplissage_id: "fake_remplissage_id",
                 question_id: "fake_question_id",
-                valeur: "fake_valeur",
+                valeur: 0,
               });
             }).then(() => {
-              console.log("");
-              console.log("");
-              console.log(" ********* toutes les tables ont été crée *********");
-              console.log("");
+              Commentaire.sync({ force: true }).then(() => {
+                Commentaire.create({
+                  id: "fake_commentaire_id",
+                  remplissage_id: "fake_remplissage_id",
+                  thematique_id: "fake_thematique_id",
+                  commentaire: "fake_commentaire",
+                });
+              }).then(() => {
+                console.log("");
+                console.log("");
+                console.log(" ********* toutes les tables ont été crée *********");
+                console.log("");
+              });
             });
           });
         });

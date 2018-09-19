@@ -11,13 +11,39 @@ router.get('/getSondage',
     const { sondage_id, remplissage_id } = req.user;
     const serverResponse = { alreadyAnswered: false };
     Models.Remplissage.findOne({ where: { id: remplissage_id } }).then((remplissage) => {
-      Models.Question.findAll({ where: { sondage_id: sondage_id } }).then((questions) => {
+      Models.Question.findAll({
+        include: [{
+          model: Models.Thematique,
+        }],
+        where: { sondage_id: sondage_id }, 
+      }).then((questions) => {
         const questionList = [];
+        const thematiqueList = new Map();
         questions.forEach((question) => {
-          questionList.push(question);
+          const quest = JSON.parse(JSON.stringify(question));
+          delete quest.thematique;
+          console.log("question    ", quest);
+          if (!thematiqueList.get(question.dataValues.thematique.dataValues.id)) {
+            thematiqueList.set(
+              question.dataValues.thematique.dataValues.id, 
+              question.dataValues.thematique.dataValues,
+            );
+          }
+          const newList = thematiqueList.get(question.dataValues.thematique.dataValues.id);
+          if (newList.questionList) {
+            newList.questionList.push(quest);
+          } else {
+            newList.questionList = [quest];
+          }
+          console.log("plip    ", newList);
+          thematiqueList.set(question.dataValues.thematique.dataValues.id, newList); 
         });
-        serverResponse.questionList = questionList; 
-        
+        thematiqueList.forEach((elem) => {
+          questionList.push(elem);
+        });
+        console.log(questionList);
+        serverResponse.thematiqueList = questionList; 
+
         // Si le sondage a déjà été remplis, on renvois les réponses
         if (remplissage) {
           serverResponse.alreadyAnswered = true;
@@ -44,13 +70,14 @@ router.post('/answerSondage',
     const { user_id, sondage_id, remplissage_id } = req.user;
     Models.Remplissage.findById(remplissage_id).then((remplissage) => {
       if (remplissage) {
-        res.send({ msg: "Vous aviez dejas repondue au sondage..." });
+        res.send({ msg: "Vous aviez deja repondue au sondage..." });
       } else {
         Models.User.findById(user_id).then((user) => {
           const sondage = { 
             sondage_id: sondage_id,
             remplissage_id: remplissage_id,
-            answered_questions: req.body.answered_questions, 
+            answered_questions: req.body.answered_questions,
+            answered_commentaires: req.body.answered_commentaires,
           };
           user.answerSondage(sondage);
           res.status(200).send({ msg: "merci d'avoir repondue :)" });

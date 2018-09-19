@@ -1,13 +1,13 @@
 
 const Models = require('../models/index');
 
-const getNumberSondages = function (next) {
+const getNumberRemplissages = function (next) {
   Models.Remplissage.count().then((count) => { 
     next(count); 
   });
 };
 
-const getNumberSondagesJour = function (jour, next) {
+const getNumberRemplissagesJour = function (jour, next) {
   Models.Remplissage.count({ where: { date: jour } }).then((count) => { 
     next(count); 
   });
@@ -31,8 +31,8 @@ const getNumberReponsesJour = function (jour, next) {
 };
 
 const dataFetch = {
-  getNumberSondages: getNumberSondages,
-  getNumberSondagesJour: getNumberSondagesJour,
+  getNumberRemplissages: getNumberRemplissages,
+  getNumberRemplissagesJour: getNumberRemplissagesJour,
   getNumberReponses: getNumberReponses,
   getNumberReponsesJour: getNumberReponsesJour,
 };

@@ -21,7 +21,7 @@ var reponseConstructor = function reponseConstructor(sequelize) {
     },
     valeur: {
       allowNull: false,
-      type: Sequelize.STRING
+      type: Sequelize.INTEGER
     }
   });
 
