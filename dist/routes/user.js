@@ -63,7 +63,8 @@ router.get('/getSondage', userCheckToken, function (req, res) {
       thematiqueList.forEach(function (elem) {
         questionList.push(elem);
       });
-      serverResponse.thematiqueList = questionList; // Si le sondage a déjà été remplis, on renvois les réponses
+      serverResponse.thematiqueList = questionList;
+      console.log(remplissage_id); // Si le sondage a déjà été remplis, on renvois les réponses
 
       if (remplissage) {
         serverResponse.alreadyAnswered = true;
@@ -77,13 +78,24 @@ router.get('/getSondage', userCheckToken, function (req, res) {
               id: sondage_id
             }
           }).then(function (sondage) {
-            serverResponse.sondageName = sondage.dataValues.name;
-            var reponseList = [];
-            reponses.forEach(function (reponse) {
-              reponseList.push(reponse);
+            Models.Commentaire.findAll({
+              where: {
+                remplissage_id: remplissage_id
+              }
+            }).then(function (commentaires) {
+              serverResponse.sondageName = sondage.dataValues.name;
+              var reponseList = [];
+              var commentaireList = [];
+              reponses.forEach(function (reponse) {
+                reponseList.push(reponse);
+              });
+              commentaires.forEach(function (commentaire) {
+                commentaireList.push(commentaire);
+              });
+              serverResponse.reponseList = reponseList;
+              serverResponse.commentaireList = commentaireList;
+              res.json(serverResponse);
             });
-            serverResponse.reponseList = reponseList;
-            res.json(serverResponse);
           });
         });
       } else {

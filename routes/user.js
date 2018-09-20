@@ -52,18 +52,27 @@ router.get('/getSondage',
         });
         serverResponse.thematiqueList = questionList; 
 
+        console.log(remplissage_id);
+
         // Si le sondage a déjà été remplis, on renvois les réponses
         if (remplissage) {
           serverResponse.alreadyAnswered = true;
           Models.Reponse.findAll({ where: { remplissage_id: remplissage_id } }).then((reponses) => {
             Models.Sondage.findOne({ where: { id: sondage_id } }).then((sondage) => {
-              serverResponse.sondageName = sondage.dataValues.name;
-              const reponseList = [];
-              reponses.forEach((reponse) => {
-                reponseList.push(reponse);
-              }); 
-              serverResponse.reponseList = reponseList;
-              res.json(serverResponse);
+              Models.Commentaire.findAll({ where: { remplissage_id: remplissage_id } }).then((commentaires) => {
+                serverResponse.sondageName = sondage.dataValues.name;
+                const reponseList = [];
+                const commentaireList = [];
+                reponses.forEach((reponse) => {
+                  reponseList.push(reponse);
+                });
+                commentaires.forEach((commentaire) => {
+                  commentaireList.push(commentaire);
+                }); 
+                serverResponse.reponseList = reponseList;
+                serverResponse.commentaireList = commentaireList;
+                res.json(serverResponse);
+              });
             });
           }); 
         } else {
