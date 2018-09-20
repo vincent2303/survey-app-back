@@ -2,6 +2,8 @@
 
 var nodemailer = require('nodemailer');
 
+var mail = require('./template');
+
 var mailer = function mailer(User, token) {
   var transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
@@ -21,7 +23,7 @@ var mailer = function mailer(User, token) {
     // list of receivers
     subject: "Voules vous mangez des gros chibres ".concat(User.firstName, "?"),
     // Subject line
-    html: "<h1>Magic link \uD83C\uDFA9 !</h1>\n                <a href=\"http://localhost:3000/sondage/?token=".concat(encodeURIComponent(token), "\">\n                YOUHOU\n                </a>"),
+    html: mail(encodeURIComponent(token), User),
     text: "Magic link: http://localhost:3000/sondage/?token=".concat(encodeURIComponent(token))
   }; // send mail with defined transport object
 

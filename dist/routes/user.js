@@ -120,6 +120,18 @@ router.post('/answerSondage', userCheckToken, function (req, res) {
   console.log(req.body.answered_questions);
   Models.Remplissage.findById(remplissage_id).then(function (remplissage) {
     if (remplissage) {
+      Models.User.findById(user_id).then(function (user) {
+        var sondage = {
+          sondage_id: sondage_id,
+          remplissage_id: remplissage_id,
+          answered_questions: req.body.answered_questions,
+          answered_commentaires: req.body.answered_commentaires
+        };
+        user.updateSondage(sondage);
+        res.status(200).send({
+          msg: "merci d'avoir modifier votre reponse :)"
+        });
+      });
       res.send({
         msg: "Vous aviez deja repondue au sondage..."
       });

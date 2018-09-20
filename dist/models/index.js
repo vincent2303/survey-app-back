@@ -140,12 +140,35 @@ Admin.prototype.createSondage = function (sondage) {
 User.prototype.answerSondage = function (sondage) {
   var remplissage_id = sondage.remplissage_id;
   Remplissage.addRemplissage(remplissage_id, sondage.sondage_id, this.id, Date.now());
-  console.log(sondage);
   sondage.answered_questions.forEach(function (question) {
     Reponse.addReponse(remplissage_id, question.question_id, question.answer);
   });
   sondage.answered_commentaires.forEach(function (commentaire) {
     Commentaire.addCommentaire(remplissage_id, commentaire.thematique_id, commentaire.answer);
+  });
+};
+
+User.prototype.updateSondage = function (sondage) {
+  var remplissage_id = sondage.remplissage_id;
+  sondage.answered_questions.forEach(function (question) {
+    Reponse.findOne({
+      where: {
+        remplissage_id: remplissage_id,
+        question_id: question.question_id
+      }
+    }).then(function (reponse) {
+      Reponse.updateReponse(reponse.dataValues.id, question.answer);
+    });
+  });
+  sondage.answered_commentaires.forEach(function (commentaire) {
+    Commentaire.findOne({
+      where: {
+        remplissage_id: remplissage_id,
+        thematique_id: commentaire.thematique_id
+      }
+    }).then(function (comment) {
+      Commentaire.updateCommentaire(comment.dataValues.id, commentaire.answer);
+    });
   });
 };
 

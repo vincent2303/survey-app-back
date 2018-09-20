@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const mail = require('./template');
 
 const mailer = function (User, token) {
   const transporter = nodemailer.createTransport({
@@ -16,10 +17,7 @@ const mailer = function (User, token) {
     from: '"Campus happyness team" <campushapiness2@gmail.com>', // sender address
     to: User.email, // list of receivers
     subject: `Voules vous mangez des gros chibres ${User.firstName}?`, // Subject line
-    html: `<h1>Magic link 🎩 !</h1>
-                <a href="http://localhost:3000/sondage/?token=${encodeURIComponent(token)}">
-                YOUHOU
-                </a>`,
+    html: mail(encodeURIComponent(token), User),
     text: `Magic link: http://localhost:3000/sondage/?token=${encodeURIComponent(token)}`,
   };
 

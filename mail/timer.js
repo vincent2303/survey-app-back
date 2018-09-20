@@ -1,6 +1,7 @@
 const schedule = require('node-schedule');
 const Models = require('../models/index.js');
 const mailer = require('./mailer');
+const env_var = require('../variables');
 
 const scheduler = function () {
   schedule.scheduleJob('0 * * * * *', () => {
@@ -9,7 +10,7 @@ const scheduler = function () {
     Models.User.findAll().then((users) => {
       users.forEach((data) => {
         Models.Sondage.findAll().then((sondage) => {
-          const sondage_id = sondage[Math.floor(Math.random() * sondage.length)].dataValues.id;
+          const sondage_id = sondage[env_var.next_sondage].dataValues.id;
           const token = data.generateJwt(sondage_id);
           const diff = Date.now() - data.dataValues.lastMailDate;
           if (data.dataValues.mailIntensity < diff / (1000 * 60 * 60 * 24) + 0.4) {
