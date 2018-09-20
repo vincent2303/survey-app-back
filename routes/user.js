@@ -59,20 +59,21 @@ router.get('/getSondage',
           serverResponse.alreadyAnswered = true;
           Models.Reponse.findAll({ where: { remplissage_id: remplissage_id } }).then((reponses) => {
             Models.Sondage.findOne({ where: { id: sondage_id } }).then((sondage) => {
-              Models.Commentaire.findAll({ where: { remplissage_id: remplissage_id } }).then((commentaires) => {
-                serverResponse.sondageName = sondage.dataValues.name;
-                const reponseList = [];
-                const commentaireList = [];
-                reponses.forEach((reponse) => {
-                  reponseList.push(reponse);
+              Models.Commentaire.findAll({ where: { remplissage_id: remplissage_id } })
+                .then((commentaires) => {
+                  serverResponse.sondageName = sondage.dataValues.name;
+                  const reponseList = [];
+                  const commentaireList = [];
+                  reponses.forEach((reponse) => {
+                    reponseList.push(reponse);
+                  });
+                  commentaires.forEach((commentaire) => {
+                    commentaireList.push(commentaire);
+                  }); 
+                  serverResponse.reponseList = reponseList;
+                  serverResponse.commentaireList = commentaireList;
+                  res.json(serverResponse);
                 });
-                commentaires.forEach((commentaire) => {
-                  commentaireList.push(commentaire);
-                }); 
-                serverResponse.reponseList = reponseList;
-                serverResponse.commentaireList = commentaireList;
-                res.json(serverResponse);
-              });
             });
           }); 
         } else {
@@ -94,7 +95,17 @@ router.post('/answerSondage',
     console.log(req.body.answered_questions);
     Models.Remplissage.findById(remplissage_id).then((remplissage) => {
       if (remplissage) {
-        res.send({ msg: "Vous aviez deja repondue au sondage suceur de bite..." });
+        Models.User.findById(user_id).then((user) => {
+          const sondage = { 
+            sondage_id: sondage_id,
+            remplissage_id: remplissage_id,
+            answered_questions: req.body.answered_questions,
+            answered_commentaires: req.body.answered_commentaires,
+          };
+          user.updateSondage(sondage);
+          res.status(200).send({ msg: "merci d'avoir modifier votre reponse :)" });
+        });
+        res.send({ msg: "Vous aviez deja repondue au sondage..." });
       } else {
         Models.User.findById(user_id).then((user) => {
           const sondage = { 
