@@ -79,6 +79,7 @@ router.post('/login', passport.authenticate('local', {
 // Un administrateur peut ajouter un autre administrateur :
 // Les attributs de l'admin sont dans le body de la requète
 // TODO : Prendre en compte le cas où il y a une erreure au cours de la création de l'admin'
+// Routes relatives a la gestion des admins et des users
 
 router.post('/createAdmin', checkToken, function (req, res) {
   console.log("creating admin ".concat(req.body.pseudo));
@@ -105,6 +106,53 @@ router.post('/singlePost', checkToken, function (req, res) {
   Models.User.addUser(user.firstName, user.lastName, user.email, function () {
     res.send("single user added");
   });
+}); // Route relative à l'affichage et la creation de sondage
+
+router.get('/getSondage', function (req, res) {
+  var sondageList = [];
+  Models.Sondage.findAll().then(function (sondages) {
+    Models.Question.findAll({
+      include: [{
+        model: Models.Thematique
+      }]
+    }).then(function (questions) {
+      sondages.forEach(function (sondage) {
+        var thematiqueList = [];
+        questions.forEach(function (question) {
+          if (question.dataValues.sondage_id === sondage.dataValues.id) {
+            console.log("question: ", question.dataValues.valeur);
+            var thema = thematiqueList.filter(function (thematique) {
+              return thematique.id === question.dataValues.thematique_id;
+            });
+
+            if (thema.length > 0) {
+              console.log(thema);
+              thema[0].questionList.push({
+                id: question.dataValues.id,
+                question: question.dataValues.valeur
+              });
+            } else {
+              thematiqueList.push({
+                id: question.dataValues.thematique_id,
+                name: question.dataValues.thematique.dataValues.name,
+                questionList: [{
+                  id: question.dataValues.id,
+                  question: question.dataValues.valeur
+                }]
+              });
+            }
+          }
+        });
+        console.log(sondageList);
+        sondageList.push({
+          id: sondage.dataValues.id,
+          name: sondage.dataValues.name,
+          thematiqueList: thematiqueList
+        });
+      });
+      res.status(200).json(sondageList);
+    });
+  });
 });
 router.post('/changeSondage', checkToken, function (req, res) {
   if (!req.body.next_sondage) {
@@ -115,7 +163,8 @@ router.post('/changeSondage', checkToken, function (req, res) {
     console.log("Changed the sondage to sondage number: ", req.body);
     res.status(200).json(env_var.next_sondage);
   }
-});
+}); // Route relative aux statisques
+
 router.get('/numberRemplissages', checkToken, function (req, res) {
   console.log(env_var.next_sondage);
   Data.getNumberRemplissages(function (count) {

@@ -76,6 +76,8 @@ router.post('/login',
 // Un administrateur peut ajouter un autre administrateur :
 // Les attributs de l'admin sont dans le body de la requète
 // TODO : Prendre en compte le cas où il y a une erreure au cours de la création de l'admin'
+
+// Routes relatives a la gestion des admins et des users
 router.post('/createAdmin', checkToken, (req, res) => {
   console.log(`creating admin ${req.body.pseudo}`);
   console.log(req.body);
@@ -109,6 +111,52 @@ router.post('/singlePost',
     });
   }); 
 
+// Route relative à l'affichage et la creation de sondage
+
+router.get('/getSondage', (req, res) => {
+  const sondageList = [];
+  Models.Sondage.findAll().then((sondages) => {
+    Models.Question.findAll({
+      include: [{
+        model: Models.Thematique,
+      }],
+    }).then((questions) => {
+      sondages.forEach((sondage) => {
+        const thematiqueList = [];
+        questions.forEach((question) => {
+          if (question.dataValues.sondage_id === sondage.dataValues.id) {
+            console.log("question: ", question.dataValues.valeur);
+            const thema = thematiqueList.filter(thematique => thematique.id === question.dataValues.thematique_id)
+            if (thema.length > 0) {
+              console.log(thema);
+              thema[0].questionList.push({
+                id: question.dataValues.id, 
+                question: question.dataValues.valeur,
+              });
+            } else {
+              thematiqueList.push({
+                id: question.dataValues.thematique_id,
+                name: question.dataValues.thematique.dataValues.name,
+                questionList: [{
+                  id: question.dataValues.id, 
+                  question: question.dataValues.valeur,
+                }],
+              });
+            }
+          }
+        });
+        console.log(sondageList);
+        sondageList.push({
+          id: sondage.dataValues.id, 
+          name: sondage.dataValues.name,
+          thematiqueList: thematiqueList,
+        });
+      });
+      res.status(200).json(sondageList);
+    });
+  });
+});
+
 router.post('/changeSondage', checkToken, (req, res) => {
   if (!req.body.next_sondage) {
     console.log("/!\\ ERROR : Inccorect body");
@@ -119,6 +167,8 @@ router.post('/changeSondage', checkToken, (req, res) => {
     res.status(200).json(env_var.next_sondage);
   }
 });
+
+// Route relative aux statisques
 
 router.get('/numberRemplissages', checkToken, (req, res) => {
   console.log(env_var.next_sondage);
