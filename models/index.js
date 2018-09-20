@@ -101,12 +101,37 @@ Admin.prototype.createSondage = function (sondage) {
 User.prototype.answerSondage = function (sondage) {
   const remplissage_id = sondage.remplissage_id;
   Remplissage.addRemplissage(remplissage_id, sondage.sondage_id, this.id, Date.now());
-  console.log(sondage);
   sondage.answered_questions.forEach((question) => {
     Reponse.addReponse(remplissage_id, question.question_id, question.answer);
   });
   sondage.answered_commentaires.forEach((commentaire) => {
     Commentaire.addCommentaire(remplissage_id, commentaire.thematique_id, commentaire.answer);
+  });
+};
+
+User.prototype.updateSondage = function (sondage) {
+  const remplissage_id = sondage.remplissage_id;
+  sondage.answered_questions.forEach((question) => {
+    Reponse.findOne({
+      where: { 
+        remplissage_id: remplissage_id, 
+        question_id: question.question_id,
+      }, 
+    })
+      .then((reponse) => {
+        Reponse.updateReponse(reponse.dataValues.id, question.answer);
+      });
+  });
+  sondage.answered_commentaires.forEach((commentaire) => {
+    Commentaire.findOne({
+      where: {
+        remplissage_id: remplissage_id, 
+        thematique_id: commentaire.thematique_id,
+      }, 
+    })
+      .then((comment) => {
+        Commentaire.updateCommentaire(comment.dataValues.id, commentaire.answer);
+      });
   });
 };
 

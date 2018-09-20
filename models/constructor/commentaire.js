@@ -31,6 +31,13 @@ const commentaireConstructor = function (sequelize) {
       });
     });
   };
+
+  Commentaire.updateCommentaire = function (commentaire_id, newCommentaire) {
+    Commentaire.update(
+      { commentaire: newCommentaire },
+      { where: { id: commentaire_id } },
+    );
+  };
   return Commentaire;
 };
 
