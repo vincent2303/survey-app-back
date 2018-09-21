@@ -156,6 +156,30 @@ router.get('/getSondage', checkToken, (req, res) => {
     });
   });
 });
+/* Survey object sent from the front to /postSondage
+  {
+    name: sondagename,
+    thematiqueList: [
+      {
+        name: thematiquename,
+        questionList: [
+          {
+            keyWord: motclef,
+            question: question,
+          },
+          { ... },
+        ]
+      },
+      { ... },
+      
+    ]
+  }
+*/
+router.post('/postSondage', checkToken, (req, res) => {
+  req.body.survey.thematiqueList.forEach(thematique => {
+
+  });
+});
 
 router.post('/changeSondage', checkToken, (req, res) => {
   if (!req.body.next_sondage) {
