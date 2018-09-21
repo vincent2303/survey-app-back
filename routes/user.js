@@ -105,7 +105,6 @@ router.post('/answerSondage',
           user.updateSondage(sondage);
           res.status(200).send({ msg: "merci d'avoir modifier votre reponse :)" });
         });
-        res.send({ msg: "Vous aviez deja repondue au sondage..." });
       } else {
         Models.User.findById(user_id).then((user) => {
           const sondage = { 
