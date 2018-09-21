@@ -132,9 +132,6 @@ router.post('/answerSondage', userCheckToken, function (req, res) {
           msg: "merci d'avoir modifier votre reponse :)"
         });
       });
-      res.send({
-        msg: "Vous aviez deja repondue au sondage..."
-      });
     } else {
       Models.User.findById(user_id).then(function (user) {
         var sondage = {

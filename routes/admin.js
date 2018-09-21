@@ -114,6 +114,7 @@ router.post('/singlePost',
 // Route relative à l'affichage et la creation de sondage
 
 router.get('/getSondage', checkToken, (req, res) => {
+<<<<<<< HEAD
   const sondageList = [];
   Models.Sondage.findAll().then((sondages) => {
     Models.Question.findAll({
@@ -158,6 +159,36 @@ router.get('/getSondage', checkToken, (req, res) => {
     });
   });
 });
+=======
+  Models.Admin.findOne({ where: { id: req.user.id } }).then((admin) => {
+    admin.getSondage(sondageList => res.status(200).json(sondageList));
+  });
+});
+
+/* Survey object sent from the front to /postSondage
+  {
+    name: sondagename,
+    thematiqueList: [
+      {
+        name: thematiquename,
+        questionList: [
+          {
+            keyWord: motclef,
+            question: question,
+          },
+          { ... },
+        ]
+      },
+      { ... },
+    ]
+  }
+*/
+router.post('/postSondage', checkToken, (req, res) => {
+  Models.Admin.findOne({ where: { id: req.user.id } }).then((admin) => {
+    admin.createSondage(req.body, () => res.status(200).send("New sondage created"));
+  });
+});
+>>>>>>> refs/remotes/origin/dev
 
 router.post('/changeSondage', checkToken, (req, res) => {
   if (!req.body.next_sondage) {
@@ -185,7 +216,15 @@ router.get("/generalStatistics", (req, res) => {
   });
 });
 
+<<<<<<< HEAD
 router.use((err, req, res) => {
+=======
+router.post('/testPostSurvey', checkToken, (req, res) => {
+  res.json('ok');
+});
+
+router.use((err, req, res, next) => {
+>>>>>>> refs/remotes/origin/dev
   console.log("error: ", err.name);
   if (err.name === 'UnauthorizedError') {
     res.status(401).json({ message: 'Unauthorized. Invalid token!' });

@@ -103,7 +103,7 @@ router.post('/answerSondage',
             answered_commentaires: req.body.answered_commentaires,
           };
           user.updateSondage(sondage);
-          res.status(200).send({ msg: "merci d'avoir modifier votre reponse :)" });
+          res.status(200).send({ msg: "Merci d'avoir modifier votre reponse !" });
         });
       } else {
         Models.User.findById(user_id).then((user) => {
@@ -114,7 +114,7 @@ router.post('/answerSondage',
             answered_commentaires: req.body.answered_commentaires,
           };
           user.answerSondage(sondage);
-          res.status(200).send({ msg: "merci d'avoir repondue :)" });
+          res.status(200).send({ msg: "Merci d'avoir repondu au sondage !" });
         });
       }
     });

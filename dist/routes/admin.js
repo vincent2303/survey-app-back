@@ -109,48 +109,13 @@ router.post('/singlePost', checkToken, function (req, res) {
 }); // Route relative à l'affichage et la creation de sondage
 
 router.get('/getSondage', checkToken, function (req, res) {
-  var sondageList = [];
-  Models.Sondage.findAll().then(function (sondages) {
-    Models.Question.findAll({
-      include: [{
-        model: Models.Thematique
-      }]
-    }).then(function (questions) {
-      sondages.forEach(function (sondage) {
-        var thematiqueList = [];
-        questions.forEach(function (question) {
-          if (question.dataValues.sondage_id === sondage.dataValues.id) {
-            console.log("question: ", question.dataValues.valeur);
-            var thema = thematiqueList.filter(function (thematique) {
-              return thematique.id === question.dataValues.thematique_id;
-            });
-
-            if (thema.length > 0) {
-              console.log(thema);
-              thema[0].questionList.push({
-                id: question.dataValues.id,
-                question: question.dataValues.valeur
-              });
-            } else {
-              thematiqueList.push({
-                id: question.dataValues.thematique_id,
-                name: question.dataValues.thematique.dataValues.name,
-                questionList: [{
-                  id: question.dataValues.id,
-                  question: question.dataValues.valeur
-                }]
-              });
-            }
-          }
-        });
-        console.log(sondageList);
-        sondageList.push({
-          id: sondage.dataValues.id,
-          name: sondage.dataValues.name,
-          thematiqueList: thematiqueList
-        });
-      });
-      res.status(200).json(sondageList);
+  Models.Admin.findOne({
+    where: {
+      id: req.user.id
+    }
+  }).then(function (admin) {
+    admin.getSondage(function (sondageList) {
+      return res.status(200).json(sondageList);
     });
   });
 });
@@ -169,7 +134,6 @@ router.get('/getSondage', checkToken, function (req, res) {
         ]
       },
       { ... },
-      
     ]
   }
 */
@@ -180,9 +144,9 @@ router.post('/postSondage', checkToken, function (req, res) {
       id: req.user.id
     }
   }).then(function (admin) {
-    console.log(req.body);
-    admin.createSondage(req.body);
-    res.status(200).send("New sondage created");
+    admin.createSondage(req.body, function () {
+      return res.status(200).send("New sondage created");
+    });
   });
 });
 router.post('/changeSondage', checkToken, function (req, res) {
@@ -217,7 +181,10 @@ router.get('/numberReponsesJour/:jour', checkToken, function (req, res) {
     res.status(200).json(count);
   });
 });
-router.use(function (err, req, res, next) {
+router.post('/testPostSurvey', checkToken, function (req, res) {
+  res.json('ok');
+});
+router.use(function (err, req, res) {
   console.log("error: ", err.name);
 
   if (err.name === 'UnauthorizedError') {
