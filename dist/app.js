@@ -1,5 +1,7 @@
 "use strict";
 
+console.log('lecture server');
+
 var express = require('express');
 
 var http = require('http');
@@ -27,7 +29,7 @@ app.use('/user', usersRouter);
 app.use('/admin', adminRouter);
 app.set('port', env.port);
 var server = http.createServer(app);
-console.log("server starting on port: ".concat(env.port));
+console.log("server starting on port: 4200");
 server.listen(env.port);
 module.exports = app;
 //# sourceMappingURL=app.js.map

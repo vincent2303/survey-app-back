@@ -18,15 +18,20 @@ var jourSondageConstructor = function jourSondageConstructor(sequelize) {
     date_emmission: {
       allowNull: false,
       type: Sequelize.DATEONLY
+    },
+    nombre_emission: {
+      allowNull: false,
+      type: Sequelize.INTEGER
     }
   });
 
-  JourSondage.addJourSondage = function (sondage_id, date_emmission) {
+  JourSondage.addJourSondage = function (sondage_id, date_emmission, nombre_emission) {
     JourSondage.sync().then(function () {
       JourSondage.create({
         id: id_generator(),
         sondage_id: sondage_id,
-        date_emmission: date_emmission
+        date_emmission: date_emmission,
+        nombre_emission: nombre_emission
       });
     });
   };

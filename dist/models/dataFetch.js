@@ -44,7 +44,6 @@ var getCommentairesJour = function getCommentairesJour(jour, next) {
             id: commentaire.dataValues.remplissage.dataValues.user_id
           }
         }).then(function (user) {
-          console.log(user.dataValues);
           commentaire.dataValues.user.firstName = user.dataValues.firstName;
           commentaire.dataValues.user.lastName = user.dataValues.lastName;
           commentaire.dataValues.user.email = user.dataValues.email;
@@ -78,6 +77,8 @@ var getNumberReponsesJour = function getNumberReponsesJour(jour, next) {
     next(count);
   });
 };
+
+var getAllStatistics = function getAllStatistics() {};
 
 var dataFetch = {
   getNumberRemplissages: getNumberRemplissages,
