@@ -1,3 +1,4 @@
+console.log('lecture server');
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
@@ -25,7 +26,7 @@ app.set('port', env.port);
 
 const server = http.createServer(app);
 
-console.log(`server starting on port: ${env.port}`);
+console.log(`server starting on port: 4200`);
 server.listen(env.port);
 
 module.exports = app;

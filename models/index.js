@@ -62,6 +62,7 @@ Commentaire.belongsTo(Remplissage, { foreignKey: 'remplissage_id', targetKey: 'i
 //     ]
 //   }
 // ]
+
 Admin.prototype.createSondage = function (sondage) {
   const sondage_id = id_generator();
   console.log(sondage);
@@ -79,6 +80,28 @@ Admin.prototype.createSondage = function (sondage) {
         });
       },
     );
+  });
+};
+
+Admin.prototype.getStatistics = function (next) {
+  const statistics = {
+    monthSendedSondage: [],
+    monthAnsweredSondage: [],
+    totalSendedSondage: 0,
+    weekSendedSondagePerDay: [],
+    totalAnsweredSondage: 0,
+    weekAnsweredSondagePerDay: [],
+    todayAnsweredSendedRate: 0, // answer/send
+    weekAnsweredSendedRate: [],
+    todayAverageSatisfaction: 0,
+    weekAverageSatisfaction: [],
+  };
+  JourSondage.sum('nombre_emission').then((totalSendedSondage) => {
+    statistics.totalSendedSondage = totalSendedSondage;
+    Remplissage.count().then((totalAnsweredSondage) => {
+      statistics.totalAnsweredSondage = totalAnsweredSondage;
+      next(statistics);
+    });
   });
 };
 

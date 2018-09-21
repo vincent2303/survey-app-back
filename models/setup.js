@@ -36,6 +36,7 @@ Admin.sync({ force: true }).then(() => {
           id: "fake_jour_sondage_id",
           sondage_id: "fake_sondage_id",
           date_emmission: Date.now(),
+          nombre_emission: 1,
         });
       });
       Thematique.sync({ force: true }).then(() => {

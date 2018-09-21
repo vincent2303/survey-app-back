@@ -29,11 +29,12 @@ const getNumberReponsesJour = function (jour, next) {
   });
 };
 
+const getAllStatistics = function () {
+  
+};
+
 const dataFetch = {
-  getNumberRemplissages: getNumberRemplissages,
-  getNumberRemplissagesJour: getNumberRemplissagesJour,
-  getNumberReponses: getNumberReponses,
-  getNumberReponsesJour: getNumberReponsesJour,
+  getAllStatistics,
 };
 
 module.exports = dataFetch;

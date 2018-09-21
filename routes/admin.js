@@ -28,7 +28,7 @@ const checkToken = require('../controllers/adminCheckToken');
 const Models = require('../models/index');
 
 // Récupère les fonctions de recherche de données
-const Data = require('../models/dataFetch');
+// const Data = require('../models/dataFetch');
 
 router.use(morgan('dev'));
 
@@ -126,13 +126,9 @@ router.get('/getSondage', checkToken, (req, res) => {
         questions.forEach((question) => {
           if (question.dataValues.sondage_id === sondage.dataValues.id) {
             console.log("question: ", question.dataValues.valeur);
-<<<<<<< HEAD
             const thema = thematiqueList.filter(
               thematique => thematique.id === question.dataValues.thematique_id,
             );
-=======
-            const thema = thematiqueList.filter(thematique => thematique.id === question.dataValues.thematique_id);
->>>>>>> refs/remotes/origin/dev
             if (thema.length > 0) {
               console.log(thema);
               thema[0].questionList.push({
@@ -162,34 +158,6 @@ router.get('/getSondage', checkToken, (req, res) => {
     });
   });
 });
-/* Survey object sent from the front to /postSondage
-  {
-    name: sondagename,
-    thematiqueList: [
-      {
-        name: thematiquename,
-        questionList: [
-          {
-            keyWord: motclef,
-            question: question,
-          },
-          { ... },
-        ]
-      },
-      { ... },
-    ]
-  }
-*/
-<<<<<<< HEAD
-=======
-router.post('/postSondage', checkToken, (req, res) => {
-  Models.Admin.findOne({ where: { id: req.user.id } }).then((admin) => {
-    console.log(req.body);
-    admin.createSondage(req.body);
-    res.status(200).send("New sondage created");
-  });
-});
->>>>>>> refs/remotes/origin/dev
 
 router.post('/changeSondage', checkToken, (req, res) => {
   if (!req.body.next_sondage) {
@@ -202,35 +170,19 @@ router.post('/changeSondage', checkToken, (req, res) => {
   }
 });
 
-// Route relative aux statisques
+// router.get("/generalStatistics", checkToken, (req, res) => {
+//   Models.Admin.findById(req.user.id).then((admin) => {
+//     console.log(admin.getStatistics());
+//   });
+//   res.json("ok");
+// });
 
-router.get('/numberRemplissages', checkToken, (req, res) => {
-  console.log(env_var.next_sondage);
-  Data.getNumberRemplissages((count) => {
-    res.status(200).json(count);
+router.get("/generalStatistics", (req, res) => {
+  Models.Admin.findById('fake_admin_id').then((admin) => {
+    admin.getStatistics((statistics) => {
+      res.json(statistics);
+    });
   });
-});
-
-router.get('/numberRemplissagesJour/:jour', checkToken, (req, res) => {
-  Data.getNumberRemplissagesJour(req.params.jour, (count) => {
-    res.status(200).json(count);
-  });
-});
-
-router.get('/numberReponses', checkToken, (req, res) => {
-  Data.getNumberReponses((count) => {
-    res.status(200).json(count);
-  });
-});
-
-router.get('/numberReponsesJour/:jour', checkToken, (req, res) => {
-  Data.getNumberReponsesJour(req.params.jour, (count) => {
-    res.status(200).json(count);
-  });
-});
-
-router.post('/testPostSurvey', checkToken, (req, res) => {
-  res.json('ok');
 });
 
 router.use((err, req, res) => {
