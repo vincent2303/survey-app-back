@@ -145,7 +145,7 @@ router.get('/numberReponsesJour/:jour', checkToken, (req, res) => {
   });
 });
 
-router.use((err, req, res, next) => {
+router.use((err, req, res) => {
   console.log("error: ", err.name);
   if (err.name === 'UnauthorizedError') {
     res.status(401).json({ message: 'Unauthorized. Invalid token!' });
