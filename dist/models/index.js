@@ -98,8 +98,9 @@ Commentaire.belongsTo(Remplissage, {
 
 Admin.prototype.createSondage = function (sondage) {
   var sondage_id = id_generator();
-  Sondage.addSondage(sondage_id, this.pseudo, Date.now());
-  sondage.forEach(function (thematique) {
+  console.log(sondage);
+  Sondage.addSondage(sondage_id, this.pseudo, Date.now(), sondage.name);
+  sondage.thematiqueList.forEach(function (thematique) {
     Thematique.findOrCreate({
       where: {
         name: thematique.name
@@ -113,8 +114,8 @@ Admin.prototype.createSondage = function (sondage) {
         console.log("nouvelle thematique");
       }
 
-      thematique.questions.forEach(function (question) {
-        Question.addQuestion(sondage_id, created_or_found_thematique.id, question);
+      thematique.questionList.forEach(function (question) {
+        Question.addQuestion(sondage_id, created_or_found_thematique.id, question.question);
       });
     });
   });

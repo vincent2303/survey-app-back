@@ -154,6 +154,37 @@ router.get('/getSondage', checkToken, function (req, res) {
     });
   });
 });
+/* Survey object sent from the front to /postSondage
+  {
+    name: sondagename,
+    thematiqueList: [
+      {
+        name: thematiquename,
+        questionList: [
+          {
+            keyWord: motclef,
+            question: question,
+          },
+          { ... },
+        ]
+      },
+      { ... },
+      
+    ]
+  }
+*/
+
+router.post('/postSondage', checkToken, function (req, res) {
+  Models.Admin.findOne({
+    where: {
+      id: req.user.id
+    }
+  }).then(function (admin) {
+    console.log(req.body);
+    admin.createSondage(req.body);
+    res.status(200).send("New sondage created");
+  });
+});
 router.post('/changeSondage', checkToken, function (req, res) {
   if (!req.body.next_sondage) {
     console.log("/!\\ ERROR : Inccorect body");
