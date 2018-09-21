@@ -126,7 +126,9 @@ router.get('/getSondage', checkToken, (req, res) => {
         questions.forEach((question) => {
           if (question.dataValues.sondage_id === sondage.dataValues.id) {
             console.log("question: ", question.dataValues.valeur);
-            const thema = thematiqueList.filter(thematique => thematique.id === question.dataValues.thematique_id)
+            const thema = thematiqueList.filter(
+              thematique => thematique.id === question.dataValues.thematique_id,
+            );
             if (thema.length > 0) {
               console.log(thema);
               thema[0].questionList.push({
@@ -171,15 +173,9 @@ router.get('/getSondage', checkToken, (req, res) => {
         ]
       },
       { ... },
-      
     ]
   }
 */
-router.post('/postSondage', checkToken, (req, res) => {
-  req.body.survey.thematiqueList.forEach(thematique => {
-
-  });
-});
 
 router.post('/changeSondage', checkToken, (req, res) => {
   if (!req.body.next_sondage) {
@@ -219,11 +215,16 @@ router.get('/numberReponsesJour/:jour', checkToken, (req, res) => {
   });
 });
 
-router.use((err, req, res, next) => {
+router.post('/testPostSurvey', checkToken, (req, res) => {
+  res.json('ok');
+});
+
+router.use((err, req, res) => {
   console.log("error: ", err.name);
   if (err.name === 'UnauthorizedError') {
     res.status(401).json({ message: 'Unauthorized. Invalid token!' });
   }
 });
+
 
 module.exports = router;
