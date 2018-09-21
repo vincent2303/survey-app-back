@@ -67,6 +67,10 @@ const getNumberReponsesJour = function (jour, next) {
   });
 };
 
+const getAllStatistics = function () {
+  
+};
+
 const dataFetch = {
   getNumberRemplissages: getNumberRemplissages,
   getNumberRemplissagesJour: getNumberRemplissagesJour,

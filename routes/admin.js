@@ -28,7 +28,7 @@ const checkToken = require('../controllers/adminCheckToken');
 const Models = require('../models/index');
 
 // Récupère les fonctions de recherche de données
-const Data = require('../models/dataFetch');
+// const Data = require('../models/dataFetch');
 
 router.use(morgan('dev'));
 
@@ -155,6 +155,7 @@ router.post('/changeNextSondage', checkToken, (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // Route relative aux statisques
 
 router.get('/numberRemplissages', checkToken, (req, res) => {
@@ -185,14 +186,32 @@ router.get('/numberReponses', checkToken, (req, res) => {
 router.get('/numberReponsesJour/:jour', checkToken, (req, res) => {
   Data.getNumberReponsesJour(req.params.jour, (count) => {
     res.status(200).json(count);
+=======
+// router.get("/generalStatistics", checkToken, (req, res) => {
+//   Models.Admin.findById(req.user.id).then((admin) => {
+//     console.log(admin.getStatistics());
+//   });
+//   res.json("ok");
+// });
+
+router.get("/generalStatistics", (req, res) => {
+  Models.Admin.findById('fake_admin_id').then((admin) => {
+    admin.getStatistics((statistics) => {
+      res.json(statistics);
+    });
+>>>>>>> 3f7008ce1db204e298ef0e7c8e1439e457497d35
   });
 });
 
+<<<<<<< HEAD
+router.use((err, req, res) => {
+=======
 router.post('/testPostSurvey', checkToken, (req, res) => {
   res.json('ok');
 });
 
 router.use((err, req, res, next) => {
+>>>>>>> refs/remotes/origin/dev
   console.log("error: ", err.name);
   if (err.name === 'UnauthorizedError') {
     res.status(401).json({ message: 'Unauthorized. Invalid token!' });
