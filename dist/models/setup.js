@@ -68,7 +68,8 @@ Admin.sync({
             id: "fake_question_id",
             sondage_id: "fake_sondage_id",
             valeur: "fake_question",
-            thematique_id: "fake_thematique_id"
+            thematique_id: "fake_thematique_id",
+            keyWord: "fake_keyWord"
           });
         }).then(function () {
           Remplissage.sync({

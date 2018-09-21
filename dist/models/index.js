@@ -96,7 +96,7 @@ Commentaire.belongsTo(Remplissage, {
 //   }
 // ]
 
-Admin.prototype.createSondage = function (sondage) {
+Admin.prototype.createSondage = function (sondage, next) {
   var sondage_id = id_generator();
   console.log(sondage);
   Sondage.addSondage(sondage_id, this.pseudo, Date.now(), sondage.name);
@@ -115,10 +115,11 @@ Admin.prototype.createSondage = function (sondage) {
       }
 
       thematique.questionList.forEach(function (question) {
-        Question.addQuestion(sondage_id, created_or_found_thematique.id, question.question);
+        Question.addQuestion(sondage_id, created_or_found_thematique.id, question.text, question.keyWord);
       });
     });
   });
+  next();
 }; // input
 // const sondage = {
 //   remlissage_id: "..."
