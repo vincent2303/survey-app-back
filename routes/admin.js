@@ -113,7 +113,7 @@ router.post('/singlePost',
 
 // Route relative à l'affichage et la creation de sondage
 
-router.get('/getSondage', (req, res) => {
+router.get('/getSondage', checkToken, (req, res) => {
   const sondageList = [];
   Models.Sondage.findAll().then((sondages) => {
     Models.Question.findAll({

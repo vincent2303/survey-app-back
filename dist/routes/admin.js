@@ -108,7 +108,7 @@ router.post('/singlePost', checkToken, function (req, res) {
   });
 }); // Route relative à l'affichage et la creation de sondage
 
-router.get('/getSondage', function (req, res) {
+router.get('/getSondage', checkToken, function (req, res) {
   var sondageList = [];
   Models.Sondage.findAll().then(function (sondages) {
     Models.Question.findAll({
