@@ -63,9 +63,6 @@ Commentaire.belongsTo(Remplissage, { foreignKey: 'remplissage_id', targetKey: 'i
 //   }
 // ]
 
-<<<<<<< HEAD
-Admin.prototype.createSondage = function (sondage) {
-=======
 Admin.prototype.getSondage = function (next) {
   const sondageList = [];
   Sondage.findAll().then((sondages) => {
@@ -113,7 +110,6 @@ Admin.prototype.getSondage = function (next) {
 };
 
 Admin.prototype.createSondage = function (sondage, next) {
->>>>>>> refs/remotes/origin/dev
   const sondage_id = id_generator();
   console.log(sondage);
   Sondage.addSondage(sondage_id, this.pseudo, Date.now(), sondage.name);
@@ -126,7 +122,11 @@ Admin.prototype.createSondage = function (sondage, next) {
           console.log("nouvelle thematique");
         }
         thematique.questionList.forEach((question) => {
-          Question.addQuestion(sondage_id, created_or_found_thematique.id, question.text, question.keyWord);
+          Question.addQuestion(
+            sondage_id, created_or_found_thematique.id,
+            question.text,
+            question.keyWord,
+          );
         });
       },
     );

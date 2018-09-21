@@ -114,52 +114,6 @@ router.post('/singlePost',
 // Route relative à l'affichage et la creation de sondage
 
 router.get('/getSondage', checkToken, (req, res) => {
-<<<<<<< HEAD
-  const sondageList = [];
-  Models.Sondage.findAll().then((sondages) => {
-    Models.Question.findAll({
-      include: [{
-        model: Models.Thematique,
-      }],
-    }).then((questions) => {
-      sondages.forEach((sondage) => {
-        const thematiqueList = [];
-        questions.forEach((question) => {
-          if (question.dataValues.sondage_id === sondage.dataValues.id) {
-            console.log("question: ", question.dataValues.valeur);
-            const thema = thematiqueList.filter(
-              thematique => thematique.id === question.dataValues.thematique_id,
-            );
-            if (thema.length > 0) {
-              console.log(thema);
-              thema[0].questionList.push({
-                id: question.dataValues.id, 
-                question: question.dataValues.valeur,
-              });
-            } else {
-              thematiqueList.push({
-                id: question.dataValues.thematique_id,
-                name: question.dataValues.thematique.dataValues.name,
-                questionList: [{
-                  id: question.dataValues.id, 
-                  question: question.dataValues.valeur,
-                }],
-              });
-            }
-          }
-        });
-        console.log(sondageList);
-        sondageList.push({
-          id: sondage.dataValues.id, 
-          name: sondage.dataValues.name,
-          thematiqueList: thematiqueList,
-        });
-      });
-      res.status(200).json(sondageList);
-    });
-  });
-});
-=======
   Models.Admin.findOne({ where: { id: req.user.id } }).then((admin) => {
     admin.getSondage(sondageList => res.status(200).json(sondageList));
   });
@@ -188,7 +142,6 @@ router.post('/postSondage', checkToken, (req, res) => {
     admin.createSondage(req.body, () => res.status(200).send("New sondage created"));
   });
 });
->>>>>>> refs/remotes/origin/dev
 
 router.post('/changeSondage', checkToken, (req, res) => {
   if (!req.body.next_sondage) {
@@ -216,15 +169,7 @@ router.get("/generalStatistics", (req, res) => {
   });
 });
 
-<<<<<<< HEAD
 router.use((err, req, res) => {
-=======
-router.post('/testPostSurvey', checkToken, (req, res) => {
-  res.json('ok');
-});
-
-router.use((err, req, res, next) => {
->>>>>>> refs/remotes/origin/dev
   console.log("error: ", err.name);
   if (err.name === 'UnauthorizedError') {
     res.status(401).json({ message: 'Unauthorized. Invalid token!' });
