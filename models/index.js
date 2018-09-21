@@ -62,6 +62,53 @@ Commentaire.belongsTo(Remplissage, { foreignKey: 'remplissage_id', targetKey: 'i
 //     ]
 //   }
 // ]
+
+Admin.prototype.getSondage = function (next) {
+  const sondageList = [];
+  Sondage.findAll().then((sondages) => {
+    Question.findAll({
+      include: [{
+        model: Thematique,
+      }],
+    }).then((questions) => {
+      sondages.forEach((sondage) => {
+        const thematiqueList = [];
+        questions.forEach((question) => {
+          if (question.dataValues.sondage_id === sondage.dataValues.id) {
+            console.log("question: ", question.dataValues.valeur);
+            const thema = thematiqueList.filter(
+              thematique => thematique.id === question.dataValues.thematique_id,
+            );
+            if (thema.length > 0) {
+              console.log(thema);
+              thema[0].questionList.push({
+                id: question.dataValues.id, 
+                question: question.dataValues.valeur,
+              });
+            } else {
+              thematiqueList.push({
+                id: question.dataValues.thematique_id,
+                name: question.dataValues.thematique.dataValues.name,
+                questionList: [{
+                  id: question.dataValues.id, 
+                  question: question.dataValues.valeur,
+                }],
+              });
+            }
+          }
+        });
+        console.log(sondageList);
+        sondageList.push({
+          id: sondage.dataValues.id, 
+          name: sondage.dataValues.name,
+          thematiqueList: thematiqueList,
+        });
+      });
+      next(sondageList);
+    });
+  });
+};
+
 Admin.prototype.createSondage = function (sondage, next) {
   const sondage_id = id_generator();
   console.log(sondage);
