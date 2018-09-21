@@ -16,7 +16,7 @@ const mailer = function (User, token) {
   const mailOptions = {
     from: '"Campus happyness team" <campushapiness2@gmail.com>', // sender address
     to: User.email, // list of receivers
-    subject: `Voules vous mangez des gros chibres ${User.firstName}?`, // Subject line
+    subject: `Nous avons besoin de votre avis ${User.firstName}?`, // Subject line
     html: mail(encodeURIComponent(token), User),
     text: `Magic link: http://localhost:3000/sondage/?token=${encodeURIComponent(token)}`,
   };

@@ -126,9 +126,13 @@ router.get('/getSondage', checkToken, (req, res) => {
         questions.forEach((question) => {
           if (question.dataValues.sondage_id === sondage.dataValues.id) {
             console.log("question: ", question.dataValues.valeur);
+<<<<<<< HEAD
             const thema = thematiqueList.filter(
               thematique => thematique.id === question.dataValues.thematique_id,
             );
+=======
+            const thema = thematiqueList.filter(thematique => thematique.id === question.dataValues.thematique_id);
+>>>>>>> refs/remotes/origin/dev
             if (thema.length > 0) {
               console.log(thema);
               thema[0].questionList.push({
@@ -176,6 +180,16 @@ router.get('/getSondage', checkToken, (req, res) => {
     ]
   }
 */
+<<<<<<< HEAD
+=======
+router.post('/postSondage', checkToken, (req, res) => {
+  Models.Admin.findOne({ where: { id: req.user.id } }).then((admin) => {
+    console.log(req.body);
+    admin.createSondage(req.body);
+    res.status(200).send("New sondage created");
+  });
+});
+>>>>>>> refs/remotes/origin/dev
 
 router.post('/changeSondage', checkToken, (req, res) => {
   if (!req.body.next_sondage) {
