@@ -180,9 +180,9 @@ router.post('/postSondage', checkToken, function (req, res) {
       id: req.user.id
     }
   }).then(function (admin) {
-    console.log(req.body);
-    admin.createSondage(req.body);
-    res.status(200).send("New sondage created");
+    admin.createSondage(req.body, function () {
+      return res.status(200).send("New sondage created");
+    });
   });
 });
 router.post('/changeSondage', checkToken, function (req, res) {

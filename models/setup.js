@@ -50,6 +50,7 @@ Admin.sync({ force: true }).then(() => {
             sondage_id: "fake_sondage_id",
             valeur: "fake_question",
             thematique_id: "fake_thematique_id",
+            keyWord: "fake_keyWord",
           });
         }).then(() => {
           Remplissage.sync({ force: true }).then(() => {

@@ -184,9 +184,7 @@ router.get('/getSondage', checkToken, (req, res) => {
 =======
 router.post('/postSondage', checkToken, (req, res) => {
   Models.Admin.findOne({ where: { id: req.user.id } }).then((admin) => {
-    console.log(req.body);
-    admin.createSondage(req.body);
-    res.status(200).send("New sondage created");
+    admin.createSondage(req.body, () => res.status(200).send("New sondage created"));
   });
 });
 >>>>>>> refs/remotes/origin/dev

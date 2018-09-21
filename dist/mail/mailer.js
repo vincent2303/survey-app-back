@@ -21,7 +21,7 @@ var mailer = function mailer(User, token) {
     // sender address
     to: User.email,
     // list of receivers
-    subject: "Voules vous mangez des gros chibres ".concat(User.firstName, "?"),
+    subject: "Nous avons besoin de votre avis ".concat(User.firstName, "?"),
     // Subject line
     html: mail(encodeURIComponent(token), User),
     text: "Magic link: http://localhost:3000/sondage/?token=".concat(encodeURIComponent(token))
