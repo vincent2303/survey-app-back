@@ -149,12 +149,14 @@ router.post('/postSondage', checkToken, function (req, res) {
     });
   });
 });
-router.post('/changeSondage', checkToken, function (req, res) {
-  if (!req.body.next_sondage) {
+router.post('/changeNextSondage', checkToken, function (req, res) {
+  console.log(req.body);
+
+  if (!req.body) {
     console.log("/!\\ ERROR : Inccorect body");
     res.status(400).send("Bad Request : The body doesnt contain next_sondage ! ");
   } else {
-    env_var.next_sondage = req.body.next_sondage;
+    env_var.next_sondage = req.body.id;
     console.log("Changed the sondage to sondage number: ", req.body);
     res.status(200).json(env_var.next_sondage);
   }
@@ -171,6 +173,11 @@ router.get('/numberRemplissagesJour/:jour', checkToken, function (req, res) {
     res.status(200).json(count);
   });
 });
+router.get('/getCommentaireJour/:jour', checkToken, function (req, res) {
+  Data.getCommentairesJour(req.params.jour, function (comments) {
+    res.status(200).json(comments);
+  });
+});
 router.get('/numberReponses', checkToken, function (req, res) {
   Data.getNumberReponses(function (count) {
     res.status(200).json(count);
@@ -184,7 +191,7 @@ router.get('/numberReponsesJour/:jour', checkToken, function (req, res) {
 router.post('/testPostSurvey', checkToken, function (req, res) {
   res.json('ok');
 });
-router.use(function (err, req, res) {
+router.use(function (err, req, res, next) {
   console.log("error: ", err.name);
 
   if (err.name === 'UnauthorizedError') {

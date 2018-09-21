@@ -129,7 +129,7 @@ router.post('/answerSondage', userCheckToken, function (req, res) {
         };
         user.updateSondage(sondage);
         res.status(200).send({
-          msg: "merci d'avoir modifier votre reponse :)"
+          msg: "Merci d'avoir modifier votre reponse !"
         });
       });
     } else {
@@ -142,7 +142,7 @@ router.post('/answerSondage', userCheckToken, function (req, res) {
         };
         user.answerSondage(sondage);
         res.status(200).send({
-          msg: "merci d'avoir repondue :)"
+          msg: "Merci d'avoir repondu au sondage !"
         });
       });
     }

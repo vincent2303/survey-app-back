@@ -108,13 +108,11 @@ Admin.prototype.getSondage = function (next) {
         var thematiqueList = [];
         questions.forEach(function (question) {
           if (question.dataValues.sondage_id === sondage.dataValues.id) {
-            console.log("question: ", question.dataValues.valeur);
             var thema = thematiqueList.filter(function (thematique) {
               return thematique.id === question.dataValues.thematique_id;
             });
 
             if (thema.length > 0) {
-              console.log(thema);
               thema[0].questionList.push({
                 id: question.dataValues.id,
                 question: question.dataValues.valeur
@@ -131,7 +129,6 @@ Admin.prototype.getSondage = function (next) {
             }
           }
         });
-        console.log(sondageList);
         sondageList.push({
           id: sondage.dataValues.id,
           name: sondage.dataValues.name,
@@ -145,7 +142,6 @@ Admin.prototype.getSondage = function (next) {
 
 Admin.prototype.createSondage = function (sondage, next) {
   var sondage_id = id_generator();
-  console.log(sondage);
   Sondage.addSondage(sondage_id, this.pseudo, Date.now(), sondage.name);
   sondage.thematiqueList.forEach(function (thematique) {
     Thematique.findOrCreate({

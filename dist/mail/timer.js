@@ -14,7 +14,7 @@ var scheduler = function scheduler() {
     Models.User.findAll().then(function (users) {
       users.forEach(function (data) {
         Models.Sondage.findAll().then(function (sondage) {
-          var sondage_id = sondage[env_var.next_sondage].dataValues.id;
+          var sondage_id = env_var.next_sondage;
           var token = data.generateJwt(sondage_id);
           var diff = Date.now() - data.dataValues.lastMailDate;
 

@@ -143,12 +143,13 @@ router.post('/postSondage', checkToken, (req, res) => {
   });
 });
 
-router.post('/changeSondage', checkToken, (req, res) => {
-  if (!req.body.next_sondage) {
+router.post('/changeNextSondage', checkToken, (req, res) => {
+  console.log(req.body);
+  if (!req.body) {
     console.log("/!\\ ERROR : Inccorect body");
     res.status(400).send("Bad Request : The body doesnt contain next_sondage ! ");
   } else {
-    env_var.next_sondage = req.body.next_sondage;
+    env_var.next_sondage = req.body.id;
     console.log("Changed the sondage to sondage number: ", req.body);
     res.status(200).json(env_var.next_sondage);
   }
@@ -166,6 +167,12 @@ router.get('/numberRemplissages', checkToken, (req, res) => {
 router.get('/numberRemplissagesJour/:jour', checkToken, (req, res) => {
   Data.getNumberRemplissagesJour(req.params.jour, (count) => {
     res.status(200).json(count);
+  });
+});
+
+router.get('/getCommentaireJour/:jour', checkToken, (req, res) => {
+  Data.getCommentairesJour(req.params.jour, (comments) => {
+    res.status(200).json(comments);
   });
 });
 
