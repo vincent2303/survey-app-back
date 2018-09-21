@@ -63,9 +63,6 @@ Commentaire.belongsTo(Remplissage, { foreignKey: 'remplissage_id', targetKey: 'i
 //   }
 // ]
 
-<<<<<<< HEAD
-Admin.prototype.createSondage = function (sondage) {
-=======
 Admin.prototype.getSondage = function (next) {
   const sondageList = [];
   Sondage.findAll().then((sondages) => {
@@ -110,7 +107,6 @@ Admin.prototype.getSondage = function (next) {
 };
 
 Admin.prototype.createSondage = function (sondage, next) {
->>>>>>> refs/remotes/origin/dev
   const sondage_id = id_generator();
   Sondage.addSondage(sondage_id, this.pseudo, Date.now(), sondage.name);
   sondage.thematiqueList.forEach((thematique) => {
