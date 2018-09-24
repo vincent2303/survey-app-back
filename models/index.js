@@ -103,7 +103,10 @@ Admin.prototype.createSondage = function (sondage) {
     promises.push(Sondage.addSondage(sondage_id, this.pseudo, Date.now(), sondage.name));
     sondage.thematiqueList.forEach((thematique) => {
       Thematique.findOrCreate(
-        { where: { name: thematique.name }, defaults: { name: thematique.name, id: id_generator() } },
+        { 
+          where: { name: thematique.name },
+          defaults: { name: thematique.name, id: id_generator() },
+        },
       ).spread(
         (created_or_found_thematique, created_value) => {
           if (created_value) {
@@ -247,12 +250,16 @@ User.prototype.answerSondage = function (sondage) {
   return new Promise((resolve) => {
     const remplissage_id = sondage.remplissage_id;
     const Promises = [];
-    Promises.push(Remplissage.addRemplissage(remplissage_id, sondage.sondage_id, this.id, Date.now()));
+    Promises.push(
+      Remplissage.addRemplissage(remplissage_id, sondage.sondage_id, this.id, Date.now()),
+    );
     sondage.answered_questions.forEach((question) => {
       Promises.push(Reponse.addReponse(remplissage_id, question.question_id, question.answer));
     });
     sondage.answered_commentaires.forEach((commentaire) => {
-      Promises.push(Commentaire.addCommentaire(remplissage_id, commentaire.thematique_id, commentaire.answer));
+      Promises.push(
+        Commentaire.addCommentaire(remplissage_id, commentaire.thematique_id, commentaire.answer),
+      );
     });
     Promise.all(Promises).then(resolve);
   });
