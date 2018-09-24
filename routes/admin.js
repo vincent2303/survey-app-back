@@ -201,13 +201,13 @@ router.get('/numberReponsesJour/:jour', checkToken, (req, res) => {
 
 router.get("/generalStatistics", (req, res) => {
   Models.Admin.findById('fake_admin_id').then((admin) => {
-    admin.getStatistics((statistics) => {
-      res.json(statistics);
+    admin.getStatistics((statisticTab) => {
+      res.json(statisticTab);
     });
   });
 });
 
-router.use((err, req, res) => {
+router.use((err, req, res, next) => {
   console.log("error: ", err.name);
   if (err.name === 'UnauthorizedError') {
     res.status(401).json({ message: 'Unauthorized. Invalid token!' });

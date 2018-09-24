@@ -49,21 +49,6 @@ Question.belongsTo(Thematique, { foreignKey: 'thematique_id', targetKey: 'id' })
 Commentaire.belongsTo(Thematique, { foreignKey: 'thematique_id', targetKey: 'id' });
 Commentaire.belongsTo(Remplissage, { foreignKey: 'remplissage_id', targetKey: 'id' });
 
-// --------  instance method ----------
-
-
-// structure input:
-// let sondage = [
-//   {
-//     name: "...",
-//     questions: [
-//       "quelle ... ?",
-//       "avez vous ...?",
-//       "..."
-//     ]
-//   }
-// ]
-
 Admin.prototype.getSondage = function (next) {
   const sondageList = [];
   Sondage.findAll().then((sondages) => {
@@ -119,7 +104,11 @@ Admin.prototype.createSondage = function (sondage, next) {
           console.log("nouvelle thematique");
         }
         thematique.questionList.forEach((question) => {
-          Question.addQuestion(sondage_id, created_or_found_thematique.id, question.text, question.keyWord);
+          Question.addQuestion(
+            sondage_id, created_or_found_thematique.id,
+            question.text,
+            question.keyWord,
+          );
         });
       },
     );
@@ -131,20 +120,33 @@ Admin.prototype.getStatistics = function (next) {
   const statistics = {
     monthSendedSondage: [],
     monthAnsweredSondage: [],
-    totalSendedSondage: 0,
-    weekSendedSondagePerDay: [],
-    totalAnsweredSondage: 0,
-    weekAnsweredSondagePerDay: [],
+    totalSendedSondage: 0, // fait
+    totalAnsweredSondage: 0, // fait
     todayAnsweredSendedRate: 0, // answer/send
-    weekAnsweredSendedRate: [],
     todayAverageSatisfaction: 0,
     weekAverageSatisfaction: [],
   };
-  JourSondage.sum('nombre_emission').then((totalSendedSondage) => {
-    statistics.totalSendedSondage = totalSendedSondage;
-    Remplissage.count().then((totalAnsweredSondage) => {
-      statistics.totalAnsweredSondage = totalAnsweredSondage;
-      next(statistics);
+  
+  const getTotalAnsweredSondage = new Promise(function (resolve) {
+    Remplissage.count().then((total) => {
+      resolve(total);
+    });
+  });
+
+  const getTotalSendedSondage = new Promise(function (resolve) {
+    JourSondage.sum('nombre_emission').then((total) => {
+      resolve(total);
+    });
+  });
+
+  Promise.all([
+    getTotalAnsweredSondage,
+    getTotalSendedSondage,
+  ]).then((statisticTab) => {
+    const [totalSendedSondage, totalAnsweredSondage] = statisticTab;
+    next({
+      totalSendedSondage: totalSendedSondage,
+      totalAnsweredSondage: totalAnsweredSondage,
     });
   });
 };
@@ -282,14 +284,5 @@ const Models = {
   Thematique: Thematique,
   Commentaire: Commentaire,
 };
-
-
-// exemple d'update
-// User.update({firstName:"Jean UPDATED :) "},{where:{id:"7k6ngokwvdpjueo7yv3i"}})
-
-// exemple findById
-// User.findById("7k6ngokwvdpjueo7yv3i").then((user)=>{
-//     console.log(user)
-// })
 
 module.exports = Models;

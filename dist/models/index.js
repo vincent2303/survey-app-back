@@ -1,5 +1,13 @@
 "use strict";
 
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
 var Sequelize = require('sequelize');
 
 var env = require('../const');
@@ -84,18 +92,7 @@ Commentaire.belongsTo(Thematique, {
 Commentaire.belongsTo(Remplissage, {
   foreignKey: 'remplissage_id',
   targetKey: 'id'
-}); // --------  instance method ----------
-// structure input:
-// let sondage = [
-//   {
-//     name: "...",
-//     questions: [
-//       "quelle ... ?",
-//       "avez vous ...?",
-//       "..."
-//     ]
-//   }
-// ]
+});
 
 Admin.prototype.getSondage = function (next) {
   var sondageList = [];
@@ -171,20 +168,32 @@ Admin.prototype.getStatistics = function (next) {
     monthSendedSondage: [],
     monthAnsweredSondage: [],
     totalSendedSondage: 0,
-    weekSendedSondagePerDay: [],
+    // fait
     totalAnsweredSondage: 0,
-    weekAnsweredSondagePerDay: [],
+    // fait
     todayAnsweredSendedRate: 0,
     // answer/send
-    weekAnsweredSendedRate: [],
     todayAverageSatisfaction: 0,
     weekAverageSatisfaction: []
   };
-  JourSondage.sum('nombre_emission').then(function (totalSendedSondage) {
-    statistics.totalSendedSondage = totalSendedSondage;
-    Remplissage.count().then(function (totalAnsweredSondage) {
-      statistics.totalAnsweredSondage = totalAnsweredSondage;
-      next(statistics);
+  var getTotalAnsweredSondage = new Promise(function (resolve) {
+    Remplissage.count().then(function (total) {
+      resolve(total);
+    });
+  });
+  var getTotalSendedSondage = new Promise(function (resolve) {
+    JourSondage.sum('nombre_emission').then(function (total) {
+      resolve(total);
+    });
+  });
+  Promise.all([getTotalAnsweredSondage, getTotalSendedSondage]).then(function (statisticTab) {
+    var _statisticTab = _slicedToArray(statisticTab, 2),
+        totalSendedSondage = _statisticTab[0],
+        totalAnsweredSondage = _statisticTab[1];
+
+    next({
+      totalSendedSondage: totalSendedSondage,
+      totalAnsweredSondage: totalAnsweredSondage
     });
   });
 };
@@ -344,12 +353,6 @@ var Models = {
   Reponse: Reponse,
   Thematique: Thematique,
   Commentaire: Commentaire
-}; // exemple d'update
-// User.update({firstName:"Jean UPDATED :) "},{where:{id:"7k6ngokwvdpjueo7yv3i"}})
-// exemple findById
-// User.findById("7k6ngokwvdpjueo7yv3i").then((user)=>{
-//     console.log(user)
-// })
-
+};
 module.exports = Models;
 //# sourceMappingURL=index.js.map

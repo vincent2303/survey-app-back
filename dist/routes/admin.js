@@ -197,12 +197,12 @@ router.get('/numberReponsesJour/:jour', checkToken, function (req, res) {
 });
 router.get("/generalStatistics", function (req, res) {
   Models.Admin.findById('fake_admin_id').then(function (admin) {
-    admin.getStatistics(function (statistics) {
-      res.json(statistics);
+    admin.getStatistics(function (statisticTab) {
+      res.json(statisticTab);
     });
   });
 });
-router.use(function (err, req, res) {
+router.use(function (err, req, res, next) {
   console.log("error: ", err.name);
 
   if (err.name === 'UnauthorizedError') {
