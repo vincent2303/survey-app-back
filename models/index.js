@@ -18,7 +18,7 @@ const sequelize = new Sequelize(env.database, env.username, env.password, {
   host: env.host,
   dialect: 'mysql',
   operatorsAliases: false,
-  logging: false,
+  logging: true,
   pool: {
     max: 5,
     min: 0,
@@ -38,7 +38,7 @@ const Sondage = sondageConstructor(sequelize);
 const Thematique = thematiqueConstructor(sequelize);
 const Commentaire = commentaireConstructor(sequelize);
 
-// Foreign keys
+// // Foreign keys
 Question.belongsTo(Sondage, { foreignKey: 'sondage_id', targetKey: 'id' });
 JourSondage.belongsTo(Sondage, { foreignKey: 'sondage_id', targetKey: 'id' });
 Reponse.belongsTo(Question, { foreignKey: 'question_id', targetKey: 'id' });
