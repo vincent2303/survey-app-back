@@ -55,7 +55,7 @@ var Remplissage = remplissageConstructor(sequelize);
 var Reponse = reponseConstructor(sequelize);
 var Sondage = sondageConstructor(sequelize);
 var Thematique = thematiqueConstructor(sequelize);
-var Commentaire = commentaireConstructor(sequelize); // Foreign keys
+var Commentaire = commentaireConstructor(sequelize); // // Foreign keys
 
 Question.belongsTo(Sondage, {
   foreignKey: 'sondage_id',

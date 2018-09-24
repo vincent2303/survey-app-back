@@ -22,6 +22,7 @@ var sondageConstructor = function sondageConstructor(sequelize) {
       type: Sequelize.DATEONLY
     },
     current: {
+      allowNull: false,
       type: Sequelize.BOOLEAN
     }
   }, {

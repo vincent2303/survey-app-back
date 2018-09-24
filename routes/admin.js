@@ -29,24 +29,6 @@ const Data = require('../models/dataFetch');
 
 router.use(morgan('dev'));
 
-
-// L'administrateur peut poster un User pour l'ajouter dans la DB
-// Les attributs de l'utilisateurs sont dans le body de la requête
-router.post('/createUser', (req, res) => {
-  // On vérifie que les données minmums pour créer un utilisateur sont bien présentes
-  if (!req.body.firstName || !req.body.lastName || !req.body.email) {
-    console.log("/!\\ ERROR : The body of the create user request doesnt contain first name or last name or email !");
-    res.status(400).send("Bad Request : The body of the create user request doesnt contain first name or last name or email ! ");
-  } else {
-    console.log(`creating user ${req.body.firstName} ${req.body.lastName}`);
-    Models.User.addUser(req.body.firstName, req.body.lastName, req.body.email, (id) => {
-      res.status(200).send({
-        id: id, firstName: req.body.firstName, lastName: req.body.lastName, email: req.body.email,
-      });
-    });
-  }
-});
-
 router.post('/login',
   passport.authenticate('local', { session: false }),
   (req, res) => {
@@ -83,7 +65,7 @@ router.post('/createAdmin', checkToken, (req, res) => {
     console.log("/!\\ ERROR : The body of the create admin request doesnt contain pseudo or mp !");
     res.status(400).send("Bad Request : The body of the create admin request doesnt contain pseudo or mp ! ");
   } else {
-    Models.Admin.addAdmin(req.body.pseudo, req.body.mp, () => {
+    Models.Admin.addAdmin(req.body.pseudo, req.body.mp, Date.now()).then(() => {
       console.log(`Added admin: ${req.body.pseudo}`);
       res.status(200).send(`User ${req.body.firstName} ${req.body.lastName} created`);
     });
@@ -94,17 +76,15 @@ router.post('/csvPost',
   checkToken,
   (req, res) => {
     req.body.userList.forEach((user) => {
-      Models.User.addUser(user.firstName, user.lastName, user.email, () => {});
+      Models.User.addUser(user.firstName, user.lastName, user.email).then(() => { res.json("user list added"); });
     });
-    res.json("user list added");
   });
 
 router.post('/singlePost',
   checkToken,
   (req, res) => {
-    const user = req.body.user;
-    Models.User.addUser(user.firstName, user.lastName, user.email, () => {
-      res.send("single user added : ", user.email);
+    Models.User.addUser(req.body.firstName, req.body.lastName, req.body.email).then(() => {
+      res.status(200).send("single user added : ", req.body.email);
     });
   }); 
 

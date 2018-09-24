@@ -18,7 +18,7 @@ const sequelize = new Sequelize(env.database, env.username, env.password, {
   host: env.host,
   dialect: 'mysql',
   operatorsAliases: false,
-  logging: true,
+  logging: false,
   pool: {
     max: 5,
     min: 0,
