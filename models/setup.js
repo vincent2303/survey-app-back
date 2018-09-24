@@ -31,6 +31,7 @@ const creationTable = function () {
           author: "fake_author",
           createdAt: Date.now(),
           name: "fake_name",
+          current: true,
         });
       }).then(() => {
         JourSondage.sync({ force: true }).then(() => {

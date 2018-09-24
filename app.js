@@ -4,7 +4,7 @@ const http = require('http');
 const cors = require('cors');
 
 const env = require('./const');
-// const scheduler = require('./mail/timer.js');
+const scheduler = require('./mail/timer.js');
 
 const adminRouter = require('./routes/admin');
 const usersRouter = require('./routes/user');
@@ -13,7 +13,7 @@ const app = express();
 app.use(cors());
 
 console.log('Starting scheduler');
-// scheduler();
+scheduler();
 
 app.use(cors());
 app.use(express.json());
