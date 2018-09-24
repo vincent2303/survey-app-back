@@ -4,6 +4,13 @@ const {
   Sondage, Thematique, User, Reponse, Question, Remplissage, Admin, JourSondage, Commentaire,
 } = Models;
 
+const alert = function () {
+  console.log("");
+  console.log("");
+  console.log(" ********* toutes les tables ont été crée *********");
+  console.log("");
+};
+
 // setup: créer les tables avec 1 fausse valeur dans chaque
 const creationTable = function () {
   Admin.sync({ force: true }).then(() => {
@@ -81,10 +88,6 @@ const creationTable = function () {
                     valeur: 0,
                   });
                 }).then(() => {
-                  console.log("");
-                  console.log("");
-                  console.log(" ********* toutes les tables ont été crée *********");
-                  console.log("");
                 });
               });
             });
@@ -98,18 +101,21 @@ const creationTable = function () {
 const setupTables = function () {
   const commentaireDel = new Promise(function (resolve) {
     Commentaire.drop().then(() => {
+      console.log('table commentaire supprimée');
       resolve();
     });
   });
 
   const reponseDel = new Promise(function (resolve) {
     Reponse.drop().then(() => {
+      console.log('table reponse supprimée');
       resolve();
     });
   });
 
   const jourSondageDel = new Promise(function (resolve) {
     JourSondage.drop().then(() => {
+      console.log('table jour sondage supprimée');
       resolve();
     });
   });
@@ -117,29 +123,35 @@ const setupTables = function () {
   Promise.all([commentaireDel, reponseDel, jourSondageDel]).then(() => {
     const questionDel = new Promise(function (resolve) {
       Question.drop().then(() => {
+        console.log('table question supprimée');
         resolve();
       });
     });
     const remplissageDel = new Promise(function (resolve) {
       Remplissage.drop().then(() => {
+        console.log('table remplissage supprimée');
         resolve();
       });
     });
     Promise.all([questionDel, remplissageDel]).then(() => {
       const thematiqueDel = new Promise(function (resolve) {
         Thematique.drop().then(() => {
+          console.log('table thematique supprimée');
           resolve();
         });
       });
       const userDel = new Promise(function (resolve) {
         User.drop().then(() => {
+          console.log('table user supprimée');
           resolve();
         });
       });
       Promise.all([thematiqueDel, userDel]).then(() => {
         Sondage.drop().then(() => {
+          console.log('table sondage supprimée');
           Admin.drop().then(() => {
-            console.log("anciennes tables supprimées, création des nouvelles");
+            console.log('table admin supprimée');
+            console.log(" -- anciennes tables supprimées, création des nouvelles --");
             creationTable();
           });
         });
