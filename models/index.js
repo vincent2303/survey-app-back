@@ -18,6 +18,7 @@ const sequelize = new Sequelize(env.database, env.username, env.password, {
   host: env.host,
   dialect: 'mysql',
   operatorsAliases: false,
+  logging: false,
   pool: {
     max: 5,
     min: 0,
@@ -148,6 +149,72 @@ Admin.prototype.getStatistics = function (next) {
   });
 };
 
+User.prototype.findSondage = function (req, next) {
+  const { sondage_id, remplissage_id } = req.user;
+  const serverResponse = { alreadyAnswered: false };
+  Remplissage.findOne({ where: { id: remplissage_id } }).then((remplissage) => {
+    Question.findAll({
+      include: [{
+        model: Thematique,
+      }],
+      where: { sondage_id: sondage_id }, 
+    }).then((questions) => {
+      const questionList = [];
+      const thematiqueList = new Map();
+      questions.forEach((question) => {
+        const quest = JSON.parse(JSON.stringify(question));
+        delete quest.thematique;
+        if (!thematiqueList.get(question.dataValues.thematique.dataValues.id)) {
+          thematiqueList.set(
+            question.dataValues.thematique.dataValues.id, 
+            question.dataValues.thematique.dataValues,
+          );
+        }
+        const newList = thematiqueList.get(question.dataValues.thematique.dataValues.id);
+        if (newList.questionList) {
+          newList.questionList.push(quest);
+        } else {
+          newList.questionList = [quest];
+        }
+        thematiqueList.set(question.dataValues.thematique.dataValues.id, newList); 
+      });
+      thematiqueList.forEach((elem) => {
+        questionList.push(elem);
+      });
+      serverResponse.thematiqueList = questionList; 
+
+      // Si le sondage a déjà été remplis, on renvois les réponses
+      if (remplissage) {
+        serverResponse.alreadyAnswered = true;
+        Reponse.findAll({ where: { remplissage_id: remplissage_id } }).then((reponses) => {
+          Sondage.findOne({ where: { id: sondage_id } }).then((sondage) => {
+            Commentaire.findAll({ where: { remplissage_id: remplissage_id } })
+              .then((commentaires) => {
+                serverResponse.sondageName = sondage.dataValues.name;
+                const reponseList = [];
+                const commentaireList = [];
+                reponses.forEach((reponse) => {
+                  reponseList.push(reponse);
+                });
+                commentaires.forEach((commentaire) => {
+                  commentaireList.push(commentaire);
+                }); 
+                serverResponse.reponseList = reponseList;
+                serverResponse.commentaireList = commentaireList;
+                next(serverResponse);
+              });
+          });
+        }); 
+      } else {
+        Sondage.findOne({ where: { id: sondage_id } }).then((sondage) => {
+          serverResponse.sondageName = sondage.dataValues.name;
+          next(serverResponse);
+        }); 
+      }
+    }); 
+  });
+};
+    
 // input
 // const sondage = {
 //   remlissage_id: "..."
@@ -190,6 +257,7 @@ User.prototype.updateSondage = function (sondage) {
       });
   });
   sondage.answered_commentaires.forEach((commentaire) => {
+    console.log("coucouc", commentaire, remplissage_id);
     Commentaire.findOne({
       where: {
         remplissage_id: remplissage_id, 
@@ -197,6 +265,7 @@ User.prototype.updateSondage = function (sondage) {
       }, 
     })
       .then((comment) => {
+        console.log(comment);
         Commentaire.updateCommentaire(comment.dataValues.id, commentaire.answer);
       });
   });
