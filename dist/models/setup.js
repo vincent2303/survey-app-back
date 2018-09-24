@@ -50,7 +50,8 @@ Admin.sync({
         JourSondage.create({
           id: "fake_jour_sondage_id",
           sondage_id: "fake_sondage_id",
-          date_emmission: Date.now()
+          date_emmission: Date.now(),
+          nombre_emission: 1
         });
       });
       Thematique.sync({
@@ -68,7 +69,8 @@ Admin.sync({
             id: "fake_question_id",
             sondage_id: "fake_sondage_id",
             valeur: "fake_question",
-            thematique_id: "fake_thematique_id"
+            thematique_id: "fake_thematique_id",
+            keyWord: "fake_keyWord"
           });
         }).then(function () {
           Remplissage.sync({

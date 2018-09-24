@@ -36,6 +36,7 @@ Admin.sync({ force: true }).then(() => {
           id: "fake_jour_sondage_id",
           sondage_id: "fake_sondage_id",
           date_emmission: Date.now(),
+          nombre_emission: 1,
         });
       });
       Thematique.sync({ force: true }).then(() => {
@@ -50,6 +51,7 @@ Admin.sync({ force: true }).then(() => {
             sondage_id: "fake_sondage_id",
             valeur: "fake_question",
             thematique_id: "fake_thematique_id",
+            keyWord: "fake_keyWord",
           });
         }).then(() => {
           Remplissage.sync({ force: true }).then(() => {

@@ -61,7 +61,7 @@ router.post('/login',
         res.status(461).send("Wrong username");
         break;
       default:
-        console.log("correct auth");
+        console.log("Correct authentification: ", req.user.dataValues.pseudo);
         const serverResponse = { 
           success: true, 
           admin: { pseudo: req.user.dataValues.pseudo },
@@ -76,6 +76,8 @@ router.post('/login',
 // Un administrateur peut ajouter un autre administrateur :
 // Les attributs de l'admin sont dans le body de la requète
 // TODO : Prendre en compte le cas où il y a une erreure au cours de la création de l'admin'
+
+// Routes relatives a la gestion des admins et des users
 router.post('/createAdmin', checkToken, (req, res) => {
   console.log(`creating admin ${req.body.pseudo}`);
   console.log(req.body);
@@ -85,7 +87,7 @@ router.post('/createAdmin', checkToken, (req, res) => {
     res.status(400).send("Bad Request : The body of the create admin request doesnt contain pseudo or mp ! ");
   } else {
     Models.Admin.addAdmin(req.body.pseudo, req.body.mp, () => {
-      console.log(`Added: ${req.body.pseudo}`);
+      console.log(`Added admin: ${req.body.pseudo}`);
       res.status(200).send(`User ${req.body.firstName} ${req.body.lastName} created`);
     });
   }
@@ -105,36 +107,86 @@ router.post('/singlePost',
   (req, res) => {
     const user = req.body.user;
     Models.User.addUser(user.firstName, user.lastName, user.email, () => {
-      res.send("single user added");
+      res.send("single user added : ", user.email);
     });
   }); 
 
-router.post('/changeSondage', checkToken, (req, res) => {
-  if (!req.body.next_sondage) {
+// Route relative à l'affichage et la creation de sondage
+
+router.get('/getSondage', checkToken, (req, res) => {
+  Models.Admin.findOne({ where: { id: req.user.id } }).then((admin) => {
+    admin.getSondage((sondageList) => {
+      console.log("Sent all sondages to client");
+      res.status(200).json(sondageList);
+    });
+  });
+});
+
+/* Survey object sent from the front to /postSondage
+  {
+    name: sondagename,
+    thematiqueList: [
+      {
+        name: thematiquename,
+        questionList: [
+          {
+            keyWord: motclef,
+            question: question,
+          },
+          { ... },
+        ]
+      },
+      { ... },
+    ]
+  }
+*/
+router.post('/postSondage', checkToken, (req, res) => {
+  Models.Admin.findOne({ where: { id: req.user.id } }).then((admin) => {
+    admin.createSondage(req.body, () => {
+      console.log("New sondage created: ", req.body.name);
+      res.status(200).send("New sondage created");
+    });
+  });
+});
+
+router.post('/changeNextSondage', checkToken, (req, res) => {
+  console.log(req.body);
+  if (!req.body) {
     console.log("/!\\ ERROR : Inccorect body");
     res.status(400).send("Bad Request : The body doesnt contain next_sondage ! ");
   } else {
-    env_var.next_sondage = req.body.next_sondage;
+    env_var.next_sondage = req.body.id;
     console.log("Changed the sondage to sondage number: ", req.body);
     res.status(200).json(env_var.next_sondage);
   }
 });
 
+// Route relative aux statisques
+
 router.get('/numberRemplissages', checkToken, (req, res) => {
-  console.log(env_var.next_sondage);
   Data.getNumberRemplissages((count) => {
+    console.log("Fetching total number of Remplissage");
     res.status(200).json(count);
   });
 });
 
 router.get('/numberRemplissagesJour/:jour', checkToken, (req, res) => {
   Data.getNumberRemplissagesJour(req.params.jour, (count) => {
+    console.log("Fetching total number of Remplissage on: ", req.params.jour);
     res.status(200).json(count);
+  });
+});
+
+router.get('/getCommentaireJour/:jour', checkToken, (req, res) => {
+  Data.getCommentairesJour(req.params.jour, (comments) => {
+    console.log("Fetching all Commentaires on: ", req.params.jour);
+    res.status(200).json(comments);
   });
 });
 
 router.get('/numberReponses', checkToken, (req, res) => {
   Data.getNumberReponses((count) => {
+    console.log("Fetching total number of Reponse");
     res.status(200).json(count);
   });
 });
@@ -142,6 +194,16 @@ router.get('/numberReponses', checkToken, (req, res) => {
 router.get('/numberReponsesJour/:jour', checkToken, (req, res) => {
   Data.getNumberReponsesJour(req.params.jour, (count) => {
     res.status(200).json(count);
+    console.log("Fetching total number of Reponse on: ", req.params.jour);
+  });
+  res.json("ok");
+});
+
+router.get("/generalStatistics", (req, res) => {
+  Models.Admin.findById('fake_admin_id').then((admin) => {
+    admin.getStatistics((statisticTab) => {
+      res.json(statisticTab);
+    });
   });
 });
 
@@ -151,5 +213,6 @@ router.use((err, req, res) => {
     res.status(401).json({ message: 'Unauthorized. Invalid token!' });
   }
 });
+
 
 module.exports = router;

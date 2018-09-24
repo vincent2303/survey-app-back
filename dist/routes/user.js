@@ -21,107 +21,38 @@ var userCheckToken = require('../controllers/userCheckToken'); // front send un 
 
 
 router.get('/getSondage', userCheckToken, function (req, res) {
-  var _req$user = req.user,
-      sondage_id = _req$user.sondage_id,
-      remplissage_id = _req$user.remplissage_id;
-  var serverResponse = {
-    alreadyAnswered: false
-  };
-  Models.Remplissage.findOne({
+  console.log("info: ", req.user);
+  Models.User.findOne({
     where: {
-      id: remplissage_id
+      id: req.user.user_id
     }
-  }).then(function (remplissage) {
-    Models.Question.findAll({
-      include: [{
-        model: Models.Thematique
-      }],
-      where: {
-        sondage_id: sondage_id
-      }
-    }).then(function (questions) {
-      var questionList = [];
-      var thematiqueList = new Map();
-      questions.forEach(function (question) {
-        var quest = JSON.parse(JSON.stringify(question));
-        delete quest.thematique;
-
-        if (!thematiqueList.get(question.dataValues.thematique.dataValues.id)) {
-          thematiqueList.set(question.dataValues.thematique.dataValues.id, question.dataValues.thematique.dataValues);
-        }
-
-        var newList = thematiqueList.get(question.dataValues.thematique.dataValues.id);
-
-        if (newList.questionList) {
-          newList.questionList.push(quest);
-        } else {
-          newList.questionList = [quest];
-        }
-
-        thematiqueList.set(question.dataValues.thematique.dataValues.id, newList);
-      });
-      thematiqueList.forEach(function (elem) {
-        questionList.push(elem);
-      });
-      serverResponse.thematiqueList = questionList;
-      console.log(remplissage_id); // Si le sondage a déjà été remplis, on renvois les réponses
-
-      if (remplissage) {
-        serverResponse.alreadyAnswered = true;
-        Models.Reponse.findAll({
-          where: {
-            remplissage_id: remplissage_id
-          }
-        }).then(function (reponses) {
-          Models.Sondage.findOne({
-            where: {
-              id: sondage_id
-            }
-          }).then(function (sondage) {
-            Models.Commentaire.findAll({
-              where: {
-                remplissage_id: remplissage_id
-              }
-            }).then(function (commentaires) {
-              serverResponse.sondageName = sondage.dataValues.name;
-              var reponseList = [];
-              var commentaireList = [];
-              reponses.forEach(function (reponse) {
-                reponseList.push(reponse);
-              });
-              commentaires.forEach(function (commentaire) {
-                commentaireList.push(commentaire);
-              });
-              serverResponse.reponseList = reponseList;
-              serverResponse.commentaireList = commentaireList;
-              res.json(serverResponse);
-            });
-          });
-        });
-      } else {
-        Models.Sondage.findOne({
-          where: {
-            id: sondage_id
-          }
-        }).then(function (sondage) {
-          serverResponse.sondageName = sondage.dataValues.name;
-          res.json(serverResponse);
-        });
-      }
+  }).then(function (user) {
+    user.findSondage(req, function (serverResponse) {
+      console.log("Sending current sondage to front");
+      res.status(200).json(serverResponse);
     });
   });
 }); // front send un post avec header et dans le body un answered_questions (cf index.js)
 
 router.post('/answerSondage', userCheckToken, function (req, res) {
-  var _req$user2 = req.user,
-      user_id = _req$user2.user_id,
-      sondage_id = _req$user2.sondage_id,
-      remplissage_id = _req$user2.remplissage_id;
-  console.log(req.body.answered_questions);
+  var _req$user = req.user,
+      user_id = _req$user.user_id,
+      sondage_id = _req$user.sondage_id,
+      remplissage_id = _req$user.remplissage_id;
   Models.Remplissage.findById(remplissage_id).then(function (remplissage) {
     if (remplissage) {
-      res.send({
-        msg: "Vous aviez deja repondue au sondage..."
+      Models.User.findById(user_id).then(function (user) {
+        var sondage = {
+          sondage_id: sondage_id,
+          remplissage_id: remplissage_id,
+          answered_questions: req.body.answered_questions,
+          answered_commentaires: req.body.answered_commentaires
+        };
+        user.updateSondage(sondage);
+        console.log(req.user.firstName, " already answered and changed his answers");
+        res.status(200).send({
+          msg: "Merci d'avoir modifier votre reponse !"
+        });
       });
     } else {
       Models.User.findById(user_id).then(function (user) {
@@ -132,8 +63,9 @@ router.post('/answerSondage', userCheckToken, function (req, res) {
           answered_commentaires: req.body.answered_commentaires
         };
         user.answerSondage(sondage);
+        console.log("New remplissage submitted by: ", req.user.firstName);
         res.status(200).send({
-          msg: "merci d'avoir repondue :)"
+          msg: "Merci d'avoir repondu au sondage !"
         });
       });
     }

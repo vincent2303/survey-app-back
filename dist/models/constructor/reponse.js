@@ -36,6 +36,16 @@ var reponseConstructor = function reponseConstructor(sequelize) {
     });
   };
 
+  Reponse.updateReponse = function (reponse_id, newValeur) {
+    Reponse.update({
+      valeur: newValeur
+    }, {
+      where: {
+        id: reponse_id
+      }
+    });
+  };
+
   return Reponse;
 };
 

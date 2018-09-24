@@ -65,7 +65,7 @@ router.post('/login', passport.authenticate('local', {
       break;
 
     default:
-      console.log("correct auth");
+      console.log("Correct authentification: ", req.user.dataValues.pseudo);
       var serverResponse = {
         success: true,
         admin: {
@@ -79,6 +79,7 @@ router.post('/login', passport.authenticate('local', {
 // Un administrateur peut ajouter un autre administrateur :
 // Les attributs de l'admin sont dans le body de la requète
 // TODO : Prendre en compte le cas où il y a une erreure au cours de la création de l'admin'
+// Routes relatives a la gestion des admins et des users
 
 router.post('/createAdmin', checkToken, function (req, res) {
   console.log("creating admin ".concat(req.body.pseudo));
@@ -89,7 +90,7 @@ router.post('/createAdmin', checkToken, function (req, res) {
     res.status(400).send("Bad Request : The body of the create admin request doesnt contain pseudo or mp ! ");
   } else {
     Models.Admin.addAdmin(req.body.pseudo, req.body.mp, function () {
-      console.log("Added: ".concat(req.body.pseudo));
+      console.log("Added admin: ".concat(req.body.pseudo));
       res.status(200).send("User ".concat(req.body.firstName, " ").concat(req.body.lastName, " created"));
     });
   }
@@ -103,38 +104,102 @@ router.post('/csvPost', checkToken, function (req, res) {
 router.post('/singlePost', checkToken, function (req, res) {
   var user = req.body.user;
   Models.User.addUser(user.firstName, user.lastName, user.email, function () {
-    res.send("single user added");
+    res.send("single user added : ", user.email);
+  });
+}); // Route relative à l'affichage et la creation de sondage
+
+router.get('/getSondage', checkToken, function (req, res) {
+  Models.Admin.findOne({
+    where: {
+      id: req.user.id
+    }
+  }).then(function (admin) {
+    admin.getSondage(function (sondageList) {
+      console.log("Sent all sondages to client");
+      res.status(200).json(sondageList);
+    });
   });
 });
-router.post('/changeSondage', checkToken, function (req, res) {
-  if (!req.body.next_sondage) {
+/* Survey object sent from the front to /postSondage
+  {
+    name: sondagename,
+    thematiqueList: [
+      {
+        name: thematiquename,
+        questionList: [
+          {
+            keyWord: motclef,
+            question: question,
+          },
+          { ... },
+        ]
+      },
+      { ... },
+    ]
+  }
+*/
+
+router.post('/postSondage', checkToken, function (req, res) {
+  Models.Admin.findOne({
+    where: {
+      id: req.user.id
+    }
+  }).then(function (admin) {
+    admin.createSondage(req.body, function () {
+      console.log("New sondage created: ", req.body.name);
+      res.status(200).send("New sondage created");
+    });
+  });
+});
+router.post('/changeNextSondage', checkToken, function (req, res) {
+  console.log(req.body);
+
+  if (!req.body) {
     console.log("/!\\ ERROR : Inccorect body");
     res.status(400).send("Bad Request : The body doesnt contain next_sondage ! ");
   } else {
-    env_var.next_sondage = req.body.next_sondage;
+    env_var.next_sondage = req.body.id;
     console.log("Changed the sondage to sondage number: ", req.body);
     res.status(200).json(env_var.next_sondage);
   }
-});
+}); // Route relative aux statisques
+
 router.get('/numberRemplissages', checkToken, function (req, res) {
-  console.log(env_var.next_sondage);
   Data.getNumberRemplissages(function (count) {
+    console.log("Fetching total number of Remplissage");
     res.status(200).json(count);
   });
 });
 router.get('/numberRemplissagesJour/:jour', checkToken, function (req, res) {
   Data.getNumberRemplissagesJour(req.params.jour, function (count) {
+    console.log("Fetching total number of Remplissage on: ", req.params.jour);
     res.status(200).json(count);
+  });
+});
+router.get('/getCommentaireJour/:jour', checkToken, function (req, res) {
+  Data.getCommentairesJour(req.params.jour, function (comments) {
+    console.log("Fetching all Commentaires on: ", req.params.jour);
+    res.status(200).json(comments);
   });
 });
 router.get('/numberReponses', checkToken, function (req, res) {
   Data.getNumberReponses(function (count) {
+    console.log("Fetching total number of Reponse");
     res.status(200).json(count);
   });
 });
 router.get('/numberReponsesJour/:jour', checkToken, function (req, res) {
   Data.getNumberReponsesJour(req.params.jour, function (count) {
     res.status(200).json(count);
+    console.log("Fetching total number of Reponse on: ", req.params.jour);
+  });
+  res.json("ok");
+});
+router.get("/generalStatistics", function (req, res) {
+  Models.Admin.findById('fake_admin_id').then(function (admin) {
+    admin.getStatistics(function (statisticTab) {
+      res.json(statisticTab);
+    });
   });
 });
 router.use(function (err, req, res, next) {

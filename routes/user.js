@@ -19,70 +19,12 @@ const userCheckToken = require('../controllers/userCheckToken');
 router.get('/getSondage',
   userCheckToken,
   (req, res) => {
-    const { sondage_id, remplissage_id } = req.user;
-    const serverResponse = { alreadyAnswered: false };
-    Models.Remplissage.findOne({ where: { id: remplissage_id } }).then((remplissage) => {
-      Models.Question.findAll({
-        include: [{
-          model: Models.Thematique,
-        }],
-        where: { sondage_id: sondage_id }, 
-      }).then((questions) => {
-        const questionList = [];
-        const thematiqueList = new Map();
-        questions.forEach((question) => {
-          const quest = JSON.parse(JSON.stringify(question));
-          delete quest.thematique;
-          if (!thematiqueList.get(question.dataValues.thematique.dataValues.id)) {
-            thematiqueList.set(
-              question.dataValues.thematique.dataValues.id, 
-              question.dataValues.thematique.dataValues,
-            );
-          }
-          const newList = thematiqueList.get(question.dataValues.thematique.dataValues.id);
-          if (newList.questionList) {
-            newList.questionList.push(quest);
-          } else {
-            newList.questionList = [quest];
-          }
-          thematiqueList.set(question.dataValues.thematique.dataValues.id, newList); 
-        });
-        thematiqueList.forEach((elem) => {
-          questionList.push(elem);
-        });
-        serverResponse.thematiqueList = questionList; 
-
-        console.log(remplissage_id);
-
-        // Si le sondage a déjà été remplis, on renvois les réponses
-        if (remplissage) {
-          serverResponse.alreadyAnswered = true;
-          Models.Reponse.findAll({ where: { remplissage_id: remplissage_id } }).then((reponses) => {
-            Models.Sondage.findOne({ where: { id: sondage_id } }).then((sondage) => {
-              Models.Commentaire.findAll({ where: { remplissage_id: remplissage_id } })
-                .then((commentaires) => {
-                  serverResponse.sondageName = sondage.dataValues.name;
-                  const reponseList = [];
-                  const commentaireList = [];
-                  reponses.forEach((reponse) => {
-                    reponseList.push(reponse);
-                  });
-                  commentaires.forEach((commentaire) => {
-                    commentaireList.push(commentaire);
-                  }); 
-                  serverResponse.reponseList = reponseList;
-                  serverResponse.commentaireList = commentaireList;
-                  res.json(serverResponse);
-                });
-            });
-          }); 
-        } else {
-          Models.Sondage.findOne({ where: { id: sondage_id } }).then((sondage) => {
-            serverResponse.sondageName = sondage.dataValues.name;
-            res.json(serverResponse);
-          }); 
-        }
-      }); 
+    console.log("info: ", req.user);
+    Models.User.findOne({ where: { id: req.user.user_id } }).then((user) => {
+      user.findSondage(req, (serverResponse) => {
+        console.log("Sending current sondage to front");
+        res.status(200).json(serverResponse);
+      });
     });
   });
 
@@ -92,7 +34,6 @@ router.post('/answerSondage',
   userCheckToken,
   (req, res) => {
     const { user_id, sondage_id, remplissage_id } = req.user;
-    console.log(req.body.answered_questions);
     Models.Remplissage.findById(remplissage_id).then((remplissage) => {
       if (remplissage) {
         Models.User.findById(user_id).then((user) => {
@@ -103,9 +44,9 @@ router.post('/answerSondage',
             answered_commentaires: req.body.answered_commentaires,
           };
           user.updateSondage(sondage);
-          res.status(200).send({ msg: "merci d'avoir modifier votre reponse :)" });
+          console.log(req.user.firstName, " already answered and changed his answers");
+          res.status(200).send({ msg: "Merci d'avoir modifier votre reponse !" });
         });
-        res.send({ msg: "Vous aviez deja repondue au sondage..." });
       } else {
         Models.User.findById(user_id).then((user) => {
           const sondage = { 
@@ -115,7 +56,8 @@ router.post('/answerSondage',
             answered_commentaires: req.body.answered_commentaires,
           };
           user.answerSondage(sondage);
-          res.status(200).send({ msg: "merci d'avoir repondue :)" });
+          console.log("New remplissage submitted by: ", req.user.firstName);
+          res.status(200).send({ msg: "Merci d'avoir repondu au sondage !" });
         });
       }
     });
