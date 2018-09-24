@@ -28,18 +28,22 @@ const adminConstructor = function (sequelize) {
   }, {
     timestamps: false,
   });
-  Admin.addAdmin = function (pseudo, password, next) {
-    const salt = crypto.randomBytes(16).toString('hex');
-    Admin.sync().then(() => {
-      Admin.create({
-        id: id_generator(),
-        pseudo,
-        salt,
-        hash: crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex'),
-        createdAt: Date.now(),
+  Admin.addAdmin = function (pseudo, password, date) {
+    const createdAt = date || Date.now();
+    return new Promise(function (resolve) {
+      const salt = crypto.randomBytes(16).toString('hex');
+      Admin.sync().then(() => {
+        Admin.create({
+          id: id_generator(),
+          pseudo,
+          salt,
+          hash: crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex'),
+          createdAt: createdAt,
+        }).then(() => {
+          resolve();
+        });
       });
     });
-    next();
   };
 
   // instance methods

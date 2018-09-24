@@ -24,12 +24,16 @@ const reponseConstructor = function (sequelize) {
     timestamps: false,
   });
   Reponse.addReponse = function (remplissage_id, question_id, valeur) {
-    Reponse.sync().then(() => {
-      Reponse.create({
-        id: id_generator(),
-        remplissage_id: remplissage_id,
-        question_id: question_id,
-        valeur: valeur,
+    return new Promise(function (resolve) {
+      Reponse.sync().then(() => {
+        Reponse.create({
+          id: id_generator(),
+          remplissage_id: remplissage_id,
+          question_id: question_id,
+          valeur: valeur,
+        }).then(() => {
+          resolve();
+        });
       });
     });
   };

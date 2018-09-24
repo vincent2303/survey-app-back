@@ -34,39 +34,19 @@ const userConstructor = function (sequelize) {
 
   // Class Methods
   User.addUser = function (firstName, lastName, email) {
-    const generatedID = id_generator();
-
-    User.sync().then(() => {
-      User.create({
-        id: generatedID,
-        firstName,
-        lastName,
-        email,
-        mailIntensity: 1,
-        lastMailDate: Date.now(),
-      });
-    });
-  };
-
-  User.addUser = function (firstName, lastName, email) {
-    const generatedID = id_generator();
-
-    User.sync().then(() => {
-      User.create({
-        id: generatedID,
-        firstName,
-        lastName,
-        email,
-        mailIntensity: 1,
-        lastMailDate: Date.now(),
-      });
-    });
-  };
-
-  User.printAllDates = function () {
-    User.findAll().then((users) => {
-      users.forEach((user) => {
-        user.ditLu();
+    return new Promise(function (resolve) {
+      const generatedID = id_generator();
+      User.sync().then(() => {
+        User.create({
+          id: generatedID,
+          firstName,
+          lastName,
+          email,
+          mailIntensity: 1,
+          lastMailDate: Date.now(),
+        }).then(() => {
+          resolve();
+        });
       });
     });
   };

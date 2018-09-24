@@ -19,32 +19,27 @@ const sondageConstructor = function (sequelize) {
       allowNull: false,
       type: Sequelize.DATEONLY,
     },
-<<<<<<< HEAD
-  }, {
-    timestamps: false,
-=======
     current: {
-      allowNull: false,
+      allowNull: true,
       type: Sequelize.BOOLEAN,
     },
->>>>>>> refs/remotes/origin/dev
+  }, {
+    timestamps: false,
   });
   Sondage.addSondage = function (id, author, createdAt, name) {
-    Sondage.sync().then(() => {
-      Sondage.create({
-        id: id,
-        name: name,
-        author: author,
-<<<<<<< HEAD
-        createdAt: createdAt,
-=======
-        date_creation: date_creation,
-        current: false,
->>>>>>> refs/remotes/origin/dev
+    return new Promise(function (resolve) {
+      Sondage.sync().then(() => {
+        Sondage.create({
+          id: id,
+          name: name,
+          author: author,
+          createdAt: createdAt,
+        }).then(() => {
+          resolve();
+        });
       });
     });
   };
-  return Sondage;
 };
 
 module.exports = sondageConstructor;
