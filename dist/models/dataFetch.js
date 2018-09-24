@@ -53,7 +53,7 @@ var getCommentairesJour = function getCommentairesJour(jour, next) {
       promiseList.push(promise);
     });
     Promise.all(promiseList).then(function () {
-      console.log("FINISHED!!!!!");
+      console.log("Commentaire for ", jour, " found.");
       next(commentaires);
     });
   });

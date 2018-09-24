@@ -24,17 +24,11 @@ console.log(""); // User.findById('fake_user_id').then((user) => {
 //   console.log(customDate2.getTime() > customDate1.getTime());
 // });
 
-var addAdminWithDate = function addAdminWithDate(pseudo) {
-  Admin.sync().then(function () {
-    Admin.create({
-      id: 'mon id',
-      pseudo: pseudo,
-      salt: 'fake_salt',
-      hash: 'fake_hash',
-      createAt: new Date(1792, 9, 21)
-    });
-  });
-};
+var date = new Date(2016, 3, 1);
+console.log(date);
 
-addAdminWithDate('malcolm');
+for (var i = 0; i < 35; i++) {
+  date.setDate(date.getDate() + 1);
+  console.log(date);
+}
 //# sourceMappingURL=testDate.js.map

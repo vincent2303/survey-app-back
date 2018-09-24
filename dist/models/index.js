@@ -55,7 +55,7 @@ var Remplissage = remplissageConstructor(sequelize);
 var Reponse = reponseConstructor(sequelize);
 var Sondage = sondageConstructor(sequelize);
 var Thematique = thematiqueConstructor(sequelize);
-var Commentaire = commentaireConstructor(sequelize); // Foreign keys
+var Commentaire = commentaireConstructor(sequelize); // // Foreign keys
 
 Question.belongsTo(Sondage, {
   foreignKey: 'sondage_id',
@@ -92,76 +92,83 @@ Commentaire.belongsTo(Thematique, {
 Commentaire.belongsTo(Remplissage, {
   foreignKey: 'remplissage_id',
   targetKey: 'id'
-});
+}); // Should change this function by using promises more
 
-Admin.prototype.getSondage = function (next) {
-  var sondageList = [];
-  Sondage.findAll().then(function (sondages) {
-    Question.findAll({
-      include: [{
-        model: Thematique
-      }]
-    }).then(function (questions) {
-      sondages.forEach(function (sondage) {
-        var thematiqueList = [];
-        questions.forEach(function (question) {
-          if (question.dataValues.sondage_id === sondage.dataValues.id) {
-            var thema = thematiqueList.filter(function (thematique) {
-              return thematique.id === question.dataValues.thematique_id;
-            });
-
-            if (thema.length > 0) {
-              thema[0].questionList.push({
-                id: question.dataValues.id,
-                question: question.dataValues.valeur
+Admin.prototype.getSondage = function () {
+  return new Promise(function (resolve) {
+    var sondageList = [];
+    Sondage.findAll().then(function (sondages) {
+      Question.findAll({
+        include: [{
+          model: Thematique
+        }]
+      }).then(function (questions) {
+        sondages.forEach(function (sondage) {
+          var thematiqueList = [];
+          questions.forEach(function (question) {
+            if (question.dataValues.sondage_id === sondage.dataValues.id) {
+              var thema = thematiqueList.filter(function (thematique) {
+                return thematique.id === question.dataValues.thematique_id;
               });
-            } else {
-              thematiqueList.push({
-                id: question.dataValues.thematique_id,
-                name: question.dataValues.thematique.dataValues.name,
-                questionList: [{
+
+              if (thema.length > 0) {
+                thema[0].questionList.push({
                   id: question.dataValues.id,
                   question: question.dataValues.valeur
-                }]
-              });
+                });
+              } else {
+                thematiqueList.push({
+                  id: question.dataValues.thematique_id,
+                  name: question.dataValues.thematique.dataValues.name,
+                  questionList: [{
+                    id: question.dataValues.id,
+                    question: question.dataValues.valeur
+                  }]
+                });
+              }
             }
-          }
+          });
+          sondageList.push({
+            id: sondage.dataValues.id,
+            name: sondage.dataValues.name,
+            thematiqueList: thematiqueList,
+            current: sondage.dataValues.current
+          });
         });
-        sondageList.push({
-          id: sondage.dataValues.id,
-          name: sondage.dataValues.name,
-          thematiqueList: thematiqueList,
-          current: sondage.dataValues.current
-        });
+        resolve(sondageList);
       });
-      next(sondageList);
     });
   });
 };
 
-Admin.prototype.createSondage = function (sondage, next) {
-  var sondage_id = id_generator();
-  Sondage.addSondage(sondage_id, this.pseudo, Date.now(), sondage.name);
-  sondage.thematiqueList.forEach(function (thematique) {
-    Thematique.findOrCreate({
-      where: {
-        name: thematique.name
-      },
-      defaults: {
-        name: thematique.name,
-        id: id_generator()
-      }
-    }).spread(function (created_or_found_thematique, created_value) {
-      if (created_value) {
-        console.log("nouvelle thematique");
-      }
+Admin.prototype.createSondage = function (sondage) {
+  var _this = this;
 
-      thematique.questionList.forEach(function (question) {
-        Question.addQuestion(sondage_id, created_or_found_thematique.id, question.text, question.keyWord);
+  return new Promise(function (resolve) {
+    var sondage_id = id_generator();
+    var promises = [];
+    promises.push(Sondage.addSondage(sondage_id, _this.pseudo, Date.now(), sondage.name));
+    sondage.thematiqueList.forEach(function (thematique) {
+      Thematique.findOrCreate({
+        where: {
+          name: thematique.name
+        },
+        defaults: {
+          name: thematique.name,
+          id: id_generator()
+        }
+      }).spread(function (created_or_found_thematique, created_value) {
+        if (created_value) {
+          console.log("nouvelle thematique");
+        }
+
+        thematique.questionList.forEach(function (question) {
+          promises.push(Question.addQuestion(sondage_id, created_or_found_thematique.id, question.text, question.keyWord));
+        });
       });
     });
+    Promise.all(promises).then(resolve);
   });
-  next();
 };
 
 Admin.prototype.getStatistics = function (next) {
@@ -199,93 +206,95 @@ Admin.prototype.getStatistics = function (next) {
   });
 };
 
-User.prototype.findSondage = function (req, next) {
-  var _req$user = req.user,
-      sondage_id = _req$user.sondage_id,
-      remplissage_id = _req$user.remplissage_id;
-  var serverResponse = {
-    alreadyAnswered: false
-  };
-  Remplissage.findOne({
-    where: {
-      id: remplissage_id
-    }
-  }).then(function (remplissage) {
-    Question.findAll({
-      include: [{
-        model: Thematique
-      }],
+User.prototype.findSondage = function (req) {
+  return new Promise(function (resolve) {
+    var _req$user = req.user,
+        sondage_id = _req$user.sondage_id,
+        remplissage_id = _req$user.remplissage_id;
+    var serverResponse = {
+      alreadyAnswered: false
+    };
+    Remplissage.findOne({
       where: {
-        sondage_id: sondage_id
+        id: remplissage_id
       }
-    }).then(function (questions) {
-      var questionList = [];
-      var thematiqueList = new Map();
-      questions.forEach(function (question) {
-        var quest = JSON.parse(JSON.stringify(question));
-        delete quest.thematique;
-
-        if (!thematiqueList.get(question.dataValues.thematique.dataValues.id)) {
-          thematiqueList.set(question.dataValues.thematique.dataValues.id, question.dataValues.thematique.dataValues);
+    }).then(function (remplissage) {
+      Question.findAll({
+        include: [{
+          model: Thematique
+        }],
+        where: {
+          sondage_id: sondage_id
         }
+      }).then(function (questions) {
+        var questionList = [];
+        var thematiqueList = new Map();
+        questions.forEach(function (question) {
+          var quest = JSON.parse(JSON.stringify(question));
+          delete quest.thematique;
 
-        var newList = thematiqueList.get(question.dataValues.thematique.dataValues.id);
-
-        if (newList.questionList) {
-          newList.questionList.push(quest);
-        } else {
-          newList.questionList = [quest];
-        }
-
-        thematiqueList.set(question.dataValues.thematique.dataValues.id, newList);
-      });
-      thematiqueList.forEach(function (elem) {
-        questionList.push(elem);
-      });
-      serverResponse.thematiqueList = questionList; // Si le sondage a déjà été remplis, on renvois les réponses
-
-      if (remplissage) {
-        serverResponse.alreadyAnswered = true;
-        Reponse.findAll({
-          where: {
-            remplissage_id: remplissage_id
+          if (!thematiqueList.get(question.dataValues.thematique.dataValues.id)) {
+            thematiqueList.set(question.dataValues.thematique.dataValues.id, question.dataValues.thematique.dataValues);
           }
-        }).then(function (reponses) {
+
+          var newList = thematiqueList.get(question.dataValues.thematique.dataValues.id);
+
+          if (newList.questionList) {
+            newList.questionList.push(quest);
+          } else {
+            newList.questionList = [quest];
+          }
+
+          thematiqueList.set(question.dataValues.thematique.dataValues.id, newList);
+        });
+        thematiqueList.forEach(function (elem) {
+          questionList.push(elem);
+        });
+        serverResponse.thematiqueList = questionList; // Si le sondage a déjà été remplis, on renvois les réponses
+
+        if (remplissage) {
+          serverResponse.alreadyAnswered = true;
+          Reponse.findAll({
+            where: {
+              remplissage_id: remplissage_id
+            }
+          }).then(function (reponses) {
+            Sondage.findOne({
+              where: {
+                id: sondage_id
+              }
+            }).then(function (sondage) {
+              Commentaire.findAll({
+                where: {
+                  remplissage_id: remplissage_id
+                }
+              }).then(function (commentaires) {
+                serverResponse.sondageName = sondage.dataValues.name;
+                var reponseList = [];
+                var commentaireList = [];
+                reponses.forEach(function (reponse) {
+                  reponseList.push(reponse);
+                });
+                commentaires.forEach(function (commentaire) {
+                  commentaireList.push(commentaire);
+                });
+                serverResponse.reponseList = reponseList;
+                serverResponse.commentaireList = commentaireList;
+                resolve(serverResponse);
+              });
+            });
+          });
+        } else {
           Sondage.findOne({
             where: {
               id: sondage_id
             }
           }).then(function (sondage) {
-            Commentaire.findAll({
-              where: {
-                remplissage_id: remplissage_id
-              }
-            }).then(function (commentaires) {
-              serverResponse.sondageName = sondage.dataValues.name;
-              var reponseList = [];
-              var commentaireList = [];
-              reponses.forEach(function (reponse) {
-                reponseList.push(reponse);
-              });
-              commentaires.forEach(function (commentaire) {
-                commentaireList.push(commentaire);
-              });
-              serverResponse.reponseList = reponseList;
-              serverResponse.commentaireList = commentaireList;
-              next(serverResponse);
-            });
+            serverResponse.sondageName = sondage.dataValues.name;
+            resolve(serverResponse);
           });
-        });
-      } else {
-        Sondage.findOne({
-          where: {
-            id: sondage_id
-          }
-        }).then(function (sondage) {
-          serverResponse.sondageName = sondage.dataValues.name;
-          next(serverResponse);
-        });
-      }
+        }
+      });
     });
   });
 }; // input
@@ -308,37 +317,46 @@ User.prototype.findSondage = function (req, next) {
 
 
 User.prototype.answerSondage = function (sondage) {
-  var remplissage_id = sondage.remplissage_id;
-  Remplissage.addRemplissage(remplissage_id, sondage.sondage_id, this.id, Date.now());
-  sondage.answered_questions.forEach(function (question) {
-    Reponse.addReponse(remplissage_id, question.question_id, question.answer);
-  });
-  sondage.answered_commentaires.forEach(function (commentaire) {
-    Commentaire.addCommentaire(remplissage_id, commentaire.thematique_id, commentaire.answer);
+  var _this2 = this;
+
+  return new Promise(function (resolve) {
+    var remplissage_id = sondage.remplissage_id;
+    var Promises = [];
+    Promises.push(Remplissage.addRemplissage(remplissage_id, sondage.sondage_id, _this2.id, Date.now()));
+    sondage.answered_questions.forEach(function (question) {
+      Promises.push(Reponse.addReponse(remplissage_id, question.question_id, question.answer));
+    });
+    sondage.answered_commentaires.forEach(function (commentaire) {
+      Promises.push(Commentaire.addCommentaire(remplissage_id, commentaire.thematique_id, commentaire.answer));
+    });
+    Promise.all(Promises).then(resolve);
   });
 };
 
 User.prototype.updateSondage = function (sondage) {
-  var remplissage_id = sondage.remplissage_id;
-  sondage.answered_questions.forEach(function (question) {
-    Reponse.findOne({
-      where: {
-        remplissage_id: remplissage_id,
-        question_id: question.question_id
-      }
-    }).then(function (reponse) {
-      Reponse.updateReponse(reponse.dataValues.id, question.answer);
+  return new Promise(function (resolve) {
+    var remplissage_id = sondage.remplissage_id;
+    sondage.answered_questions.forEach(function (question) {
+      Reponse.findOne({
+        where: {
+          remplissage_id: remplissage_id,
+          question_id: question.question_id
+        }
+      }).then(function (reponse) {
+        Reponse.updateReponse(reponse.dataValues.id, question.answer);
+      });
     });
-  });
-  sondage.answered_commentaires.forEach(function (commentaire) {
-    Commentaire.findOne({
-      where: {
-        remplissage_id: remplissage_id,
-        thematique_id: commentaire.thematique_id
-      }
-    }).then(function (comment) {
-      Commentaire.updateCommentaire(comment.dataValues.id, commentaire.answer);
+    sondage.answered_commentaires.forEach(function (commentaire) {
+      Commentaire.findOne({
+        where: {
+          remplissage_id: remplissage_id,
+          thematique_id: commentaire.thematique_id
+        }
+      }).then(function (comment) {
+        Commentaire.updateCommentaire(comment.dataValues.id, commentaire.answer);
+      });
     });
+    resolve();
   });
 };
 

@@ -23,15 +23,21 @@ var reponseConstructor = function reponseConstructor(sequelize) {
       allowNull: false,
       type: Sequelize.INTEGER
     }
+  }, {
+    timestamps: false
   });
 
   Reponse.addReponse = function (remplissage_id, question_id, valeur) {
-    Reponse.sync().then(function () {
-      Reponse.create({
-        id: id_generator(),
-        remplissage_id: remplissage_id,
-        question_id: question_id,
-        valeur: valeur
+    return new Promise(function (resolve) {
+      Reponse.sync().then(function () {
+        Reponse.create({
+          id: id_generator(),
+          remplissage_id: remplissage_id,
+          question_id: question_id,
+          valeur: valeur
+        }).then(function () {
+          resolve();
+        });
       });
     });
   };

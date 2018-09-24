@@ -27,7 +27,7 @@ router.get('/getSondage', userCheckToken, function (req, res) {
       id: req.user.user_id
     }
   }).then(function (user) {
-    user.findSondage(req, function (serverResponse) {
+    user.findSondage(req).then(function (serverResponse) {
       console.log("Sending current sondage to front");
       res.status(200).json(serverResponse);
     });
@@ -48,10 +48,11 @@ router.post('/answerSondage', userCheckToken, function (req, res) {
           answered_questions: req.body.answered_questions,
           answered_commentaires: req.body.answered_commentaires
         };
-        user.updateSondage(sondage);
-        console.log(req.user.firstName, " already answered and changed his answers");
-        res.status(200).send({
-          msg: "Merci d'avoir modifier votre reponse !"
+        user.updateSondage(sondage).then(function () {
+          console.log(req.user.firstName, " already answered and changed his answers");
+          res.status(200).send({
+            msg: "Merci d'avoir modifier votre reponse !"
+          });
         });
       });
     } else {
@@ -62,10 +63,11 @@ router.post('/answerSondage', userCheckToken, function (req, res) {
           answered_questions: req.body.answered_questions,
           answered_commentaires: req.body.answered_commentaires
         };
-        user.answerSondage(sondage);
-        console.log("New remplissage submitted by: ", req.user.firstName);
-        res.status(200).send({
-          msg: "Merci d'avoir repondu au sondage !"
+        user.answerSondage(sondage).then(function () {
+          console.log("New remplissage submitted by: ", req.user.firstName);
+          res.status(200).send({
+            msg: "Merci d'avoir repondu au sondage !"
+          });
         });
       });
     }
