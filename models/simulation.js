@@ -55,53 +55,16 @@ const fakeSurvey = {
 };
 
 const simulationDay = new Date(startYear, startMonth, startDay);
+const promiseArray = [];
 
-// first day, add 1 admin, 10 users and 1 survey
-const addFirstAdmin = new Promise(function (resolve) {
-  Admin.sync().then(() => {
-    Admin.create({
-      id: 'admin_simulation_id',
-      pseudo: 'admin_simulation_pseudo',
-      salt: 'admin_simulation_pseudo',
-      hash: 'admin_simulation_pseudo',
-      createdAt: simulationDay,
-    }).then(() => {
-      resolve();
-    });
-  });
-});
+promiseArray.push(Admin.addAdmin('Vince', 'Vince'));
+for (let i = 0; i < 10; i++) {
+  promiseArray.push(User.addUser('simulation_user', 'simulation_user', 'simulation_user'));
+}
 
-
-const addManyUsers = function (userNumber, resolve) {
-  if (userNumber === 0) {
-    resolve();
-  } else {
-    User.sync().then(() => {
-      User.create({
-        id: id_generator(),
-        firstName: "user_simulation_fn",
-        lastName: "user_simulation_ln",
-        email: "user_simulation_email",
-      }).then(() => {
-        userNumber -= 1;
-        addManyUsers(userNumber, resolve);
-      });
-    });
-  }
-};
-
-const addTenUsers = new Promise(function (resolve) {
-  addManyUsers(10, resolve);
-});
-
-Promise.all([addFirstAdmin, addTenUsers]).then(() => {
-  alert("admin et 10 ut");
-  
-  const firstAdminCreateSurvey = new Promise(function (resolve) {
-    Admin.findOne({ pseudo: 'Vince' }).then((admin) => {
-      admin.createSondage(fakeSurvey, () => {
-        resolve();
-      });
-    });
+Promise.all(promiseArray).then(() => {
+  console.log('1 Admin et 10 utilisateurs ajouté');
+  Admin.find({ where: { pseudo: 'Vince' } }).then((admin) => {
+    
   });
 });

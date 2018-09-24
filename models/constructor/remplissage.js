@@ -22,6 +22,7 @@ const remplissageConstructor = function (sequelize) {
   }, {
     timestamps: false,
   });
+  
   Remplissage.addRemplissage = function (id, sondage_id, user_id, date) {
     return new Promise(function (resolve) {
       Remplissage.sync().then(() => {
