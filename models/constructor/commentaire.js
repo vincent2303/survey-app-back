@@ -20,6 +20,8 @@ const commentaireConstructor = function (sequelize) {
       allowNull: false,
       type: Sequelize.STRING,
     },
+  }, {
+    timestamps: false,
   });
   Commentaire.addCommentaire = function (remplissage_id, thematique_id, commentaire) {
     Commentaire.sync().then(() => {

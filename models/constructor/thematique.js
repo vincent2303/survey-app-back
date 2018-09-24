@@ -12,6 +12,8 @@ const thematiqueConstructor = function (sequelize) {
       allowNull: false,
       type: Sequelize.STRING,
     },
+  }, {
+    timestamps: false,
   });
   Thematique.addThematique = function (name) {
     Thematique.sync().then(() => {

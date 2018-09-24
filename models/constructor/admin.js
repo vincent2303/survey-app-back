@@ -21,6 +21,12 @@ const adminConstructor = function (sequelize) {
     hash: {
       type: Sequelize.STRING,
     },
+    createdAt: {
+      type: Sequelize.DATE,
+      allowNull: false,
+    },
+  }, {
+    timestamps: false,
   });
   Admin.addAdmin = function (pseudo, password, next) {
     const salt = crypto.randomBytes(16).toString('hex');
@@ -30,6 +36,7 @@ const adminConstructor = function (sequelize) {
         pseudo,
         salt,
         hash: crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex'),
+        createdAt: Date.now(),
       });
     });
     next();

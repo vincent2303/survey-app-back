@@ -20,6 +20,8 @@ const reponseConstructor = function (sequelize) {
       allowNull: false,
       type: Sequelize.INTEGER,
     },
+  }, {
+    timestamps: false,
   });
   Reponse.addReponse = function (remplissage_id, question_id, valeur) {
     Reponse.sync().then(() => {

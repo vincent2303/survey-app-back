@@ -92,6 +92,7 @@ Admin.prototype.getSondage = function (next) {
 };
 
 Admin.prototype.createSondage = function (sondage, next) {
+  console.log(sondage);
   const sondage_id = id_generator();
   Sondage.addSondage(sondage_id, this.pseudo, Date.now(), sondage.name);
   sondage.thematiqueList.forEach((thematique) => {

@@ -24,6 +24,8 @@ const questionConstructor = function (sequelize) {
       allowNull: false,
       type: Sequelize.STRING,
     },
+  }, {
+    timestamps: false,
   });
   Question.addQuestion = function (sondage_id, thematique_id, valeur, keyWord) {
     Question.sync().then(() => {

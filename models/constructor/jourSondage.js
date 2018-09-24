@@ -20,6 +20,8 @@ const jourSondageConstructor = function (sequelize) {
       allowNull: false,
       type: Sequelize.INTEGER,
     },
+  }, {
+    timestamps: false,
   });
   JourSondage.addJourSondage = function (sondage_id, date_emmission, nombre_emission) {
     JourSondage.sync().then(() => {
