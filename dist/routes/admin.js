@@ -111,7 +111,7 @@ router.get('/getSondage', checkToken, function (req, res) {
       id: req.user.id
     }
   }).then(function (admin) {
-    admin.getSondage(function (sondageList) {
+    admin.getSondage().thne(function (sondageList) {
       console.log("Sent all sondages to client");
       res.status(200).json(sondageList);
     });
@@ -142,7 +142,7 @@ router.post('/postSondage', checkToken, function (req, res) {
       id: req.user.id
     }
   }).then(function (admin) {
-    admin.createSondage(req.body, function () {
+    admin.createSondage(req.body).then(function () {
       console.log("New sondage created: ", req.body.name);
       res.status(200).send("New sondage created");
     });

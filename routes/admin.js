@@ -112,7 +112,7 @@ router.post('/singlePost',
 
 router.get('/getSondage', checkToken, (req, res) => {
   Models.Admin.findOne({ where: { id: req.user.id } }).then((admin) => {
-    admin.getSondage((sondageList) => {
+    admin.getSondage().thne((sondageList) => {
       console.log("Sent all sondages to client");
       res.status(200).json(sondageList);
     });
@@ -139,7 +139,7 @@ router.get('/getSondage', checkToken, (req, res) => {
 */
 router.post('/postSondage', checkToken, (req, res) => {
   Models.Admin.findOne({ where: { id: req.user.id } }).then((admin) => {
-    admin.createSondage(req.body, () => {
+    admin.createSondage(req.body).then(() => {
       console.log("New sondage created: ", req.body.name);
       res.status(200).send("New sondage created");
     });
