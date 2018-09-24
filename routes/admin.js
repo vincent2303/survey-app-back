@@ -59,7 +59,6 @@ router.post('/login',
 // Routes relatives a la gestion des admins et des users
 router.post('/createAdmin', checkToken, (req, res) => {
   console.log(`creating admin ${req.body.pseudo}`);
-  console.log(req.body);
   // On vérifie que les données minmums pour créer un utilisateur sont bien présentes
   if (!req.body.pseudo || !req.body.mp) {
     console.log("/!\\ ERROR : The body of the create admin request doesnt contain pseudo or mp !");
@@ -67,7 +66,7 @@ router.post('/createAdmin', checkToken, (req, res) => {
   } else {
     Models.Admin.addAdmin(req.body.pseudo, req.body.mp, Date.now()).then(() => {
       console.log(`Added admin: ${req.body.pseudo}`);
-      res.status(200).send(`User ${req.body.firstName} ${req.body.lastName} created`);
+      res.status(200).send(`Admin ${req.body.pseudo} created`);
     });
   }
 });
@@ -84,7 +83,7 @@ router.post('/singlePost',
   checkToken,
   (req, res) => {
     Models.User.addUser(req.body.firstName, req.body.lastName, req.body.email).then(() => {
-      res.status(200).send("single user added : ", req.body.email);
+      res.status(200).send(req.body.email);
     });
   }); 
 
@@ -178,8 +177,8 @@ router.get('/numberReponsesJour/:jour', checkToken, (req, res) => {
   res.json("ok");
 });
 
-router.get("/generalStatistics", (req, res) => {
-  Models.Admin.findById('fake_admin_id').then((admin) => {
+router.get("/generalStatistics", checkToken, (req, res) => {
+  Models.Admin.findById(req.user.id).then((admin) => {
     admin.getStatistics((statisticTab) => {
       res.json(statisticTab);
     });

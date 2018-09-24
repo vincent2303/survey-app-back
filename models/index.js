@@ -13,6 +13,7 @@ const sondageConstructor = require('./constructor/sondage');
 const thematiqueConstructor = require('./constructor/thematique');
 const commentaireConstructor = require('./constructor/commentaire');
 
+const Op = Sequelize.Op;
 // sequelize connection
 const sequelize = new Sequelize(env.database, env.username, env.password, {
   host: env.host,
@@ -128,13 +129,13 @@ Admin.prototype.createSondage = function (sondage) {
 
 Admin.prototype.getStatistics = function (next) {
   const statistics = {
-    monthSendedSondage: [],
-    monthAnsweredSondage: [],
-    totalSendedSondage: 0, // fait
+    monthSentSondage: [], // fait
+    monthAnsweredSondage: [], // fait
+    totalSentSondage: 0, // fait
     totalAnsweredSondage: 0, // fait
-    todayAnsweredSendedRate: 0, // answer/send
-    todayAverageSatisfaction: 0,
-    weekAverageSatisfaction: [],
+    todayAnsweredSendedRate: 0, // fait
+    todayAverageSatisfaction: 0, // fait
+    weekAverageSatisfaction: [], // fait
   };
   
   const getTotalAnsweredSondage = new Promise(function (resolve) {
@@ -143,20 +144,120 @@ Admin.prototype.getStatistics = function (next) {
     });
   });
 
-  const getTotalSendedSondage = new Promise(function (resolve) {
+  const getTotalSentSondage = new Promise(function (resolve) {
     JourSondage.sum('nombre_emission').then((total) => {
       resolve(total);
     });
   });
 
+  const getJourSentSondage = jour => new Promise((resolve) => {
+    const jourDate = new Date(jour).toLocaleDateString();
+    JourSondage.findOne({ where: { date_emmission: jour } }).then((jsondage) => {
+      if (jsondage) {
+        console.log("On ", jourDate, ", ", jsondage.dataValues.nombre_emission, " mails were sent.");
+        resolve(jsondage.dataValues.nombre_emission);
+      } else {
+        console.log("No mail sent on: ", jourDate);
+        resolve(0);
+      }
+    });
+  });
+
+  const getJourAnsweredSondage = jour => new Promise((resolve) => {
+    const jourDate = new Date(jour).toLocaleDateString();
+    Remplissage.count({ where: { date: jour } }).then((nb) => {
+      console.log("On ", jourDate, ", ", nb, " sondage were answered.");
+      resolve(nb);
+    });
+  });
+
+  const getMonthSentSondage = new Promise((resolve) => {
+    const intPromises = [];
+    for (let i = 0; i < 31; i++) {
+      intPromises.push(getJourSentSondage(Date.now() - (86400000 * i)));
+    }
+    Promise.all(intPromises).then((data) => {
+      resolve(data);
+    });
+  });
+
+  const getMonthAnsweredSondage = new Promise((resolve) => {
+    const intPromises = [];
+    for (let i = 0; i < 31; i++) {
+      intPromises.push(getJourAnsweredSondage(Date.now() - (86400000 * i)));
+    }
+    Promise.all(intPromises).then((data) => {
+      resolve(data);
+    });
+  });
+
+  const getTodayRate = new Promise((resolve) => {
+    Promise.all([getJourAnsweredSondage(Date.now()), getJourSentSondage(Date.now())])
+      .then(((data) => {
+        console.log(data);
+        const rate = data[0] / data[1];
+        resolve(rate);
+      }));
+  });
+
+  const getDayStatis = jour => new Promise((resolve) => {
+    Reponse.findAll({
+      include: [{
+        model: Remplissage,
+        where: { date: jour },
+      }],
+    }).then((reps) => {
+      if (reps.length > 0) {
+        let satisfaction = 0;
+        reps.forEach((rep) => {
+          satisfaction += rep.dataValues.valeur;
+        });
+        resolve(satisfaction / reps.length);
+      } else {
+        resolve(0);
+      }
+    });
+  });
+
+  const getTodayStatis = new Promise((resolve) => {
+    getDayStatis(Date.now()).then(data => resolve(data));
+  });
+
+  const getWeekStatis = new Promise((resolve) => {
+    const intPromises = [];
+    for (let i = 0; i < 8; i++) {
+      intPromises.push(getDayStatis(Date.now() - (86400000 * i)));
+    }
+    Promise.all(intPromises).then((data) => {
+      resolve(data);
+    });
+  });
+
   Promise.all([
     getTotalAnsweredSondage,
-    getTotalSendedSondage,
+    getTotalSentSondage,
+    getMonthSentSondage,
+    getMonthAnsweredSondage,
+    getTodayRate,
+    getTodayStatis,
+    getWeekStatis,
   ]).then((statisticTab) => {
-    const [totalSendedSondage, totalAnsweredSondage] = statisticTab;
+    const [
+      totalAnsweredSondage, 
+      totalSentSondage, 
+      monthSentSondage, 
+      monthAnsweredSondage,
+      todayAnsweredSendedRate,
+      todayAverageSatisfaction,
+      weekAverageSatisfaction] = statisticTab;
     next({
-      totalSendedSondage: totalSendedSondage,
+      totalSentSondage: totalSentSondage,
       totalAnsweredSondage: totalAnsweredSondage,
+      monthSentSondage: monthSentSondage,
+      monthAnsweredSondage: monthAnsweredSondage,
+      todayAnsweredSendedRate: todayAnsweredSendedRate,
+      todayAverageSatisfaction: todayAverageSatisfaction,
+      weekAverageSatisfaction: weekAverageSatisfaction,
     });
   });
 };

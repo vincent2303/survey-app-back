@@ -19,7 +19,6 @@ const userCheckToken = require('../controllers/userCheckToken');
 router.get('/getSondage',
   userCheckToken,
   (req, res) => {
-    console.log("info: ", req.user);
     Models.User.findOne({ where: { id: req.user.user_id } }).then((user) => {
       user.findSondage(req).then((serverResponse) => {
         console.log("Sending current sondage to front");

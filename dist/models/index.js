@@ -31,8 +31,9 @@ var sondageConstructor = require('./constructor/sondage');
 
 var thematiqueConstructor = require('./constructor/thematique');
 
-var commentaireConstructor = require('./constructor/commentaire'); // sequelize connection
+var commentaireConstructor = require('./constructor/commentaire');
 
+var Op = Sequelize.Op; // sequelize connection
 
 var sequelize = new Sequelize(env.database, env.username, env.password, {
   host: env.host,
@@ -173,15 +174,18 @@ Admin.prototype.createSondage = function (sondage) {
 
 Admin.prototype.getStatistics = function (next) {
   var statistics = {
-    monthSendedSondage: [],
+    monthSentSondage: [],
+    // fait
     monthAnsweredSondage: [],
-    totalSendedSondage: 0,
+    // fait
+    totalSentSondage: 0,
     // fait
     totalAnsweredSondage: 0,
     // fait
     todayAnsweredSendedRate: 0,
-    // answer/send
+    // fait
     todayAverageSatisfaction: 0,
+    // fait
     weekAverageSatisfaction: []
   };
   var getTotalAnsweredSondage = new Promise(function (resolve) {
@@ -189,19 +193,132 @@ Admin.prototype.getStatistics = function (next) {
       resolve(total);
     });
   });
-  var getTotalSendedSondage = new Promise(function (resolve) {
+  var getTotalSentSondage = new Promise(function (resolve) {
     JourSondage.sum('nombre_emission').then(function (total) {
       resolve(total);
     });
   });
-  Promise.all([getTotalAnsweredSondage, getTotalSendedSondage]).then(function (statisticTab) {
-    var _statisticTab = _slicedToArray(statisticTab, 2),
-        totalSendedSondage = _statisticTab[0],
-        totalAnsweredSondage = _statisticTab[1];
+
+  var getJourSentSondage = function getJourSentSondage(jour) {
+    return new Promise(function (resolve) {
+      var jourDate = new Date(jour).toLocaleDateString();
+      JourSondage.findOne({
+        where: {
+          date_emmission: jour
+        }
+      }).then(function (jsondage) {
+        if (jsondage) {
+          console.log("On ", jourDate, ", ", jsondage.dataValues.nombre_emission, " mails were sent.");
+          resolve(jsondage.dataValues.nombre_emission);
+        } else {
+          console.log("No mail sent on: ", jourDate);
+          resolve(0);
+        }
+      });
+    });
+  };
+
+  var getJourAnsweredSondage = function getJourAnsweredSondage(jour) {
+    return new Promise(function (resolve) {
+      var jourDate = new Date(jour).toLocaleDateString();
+      Remplissage.count({
+        where: {
+          date: jour
+        }
+      }).then(function (nb) {
+        console.log("On ", jourDate, ", ", nb, " sondage were answered.");
+        resolve(nb);
+      });
+    });
+  };
+
+  var getMonthSentSondage = new Promise(function (resolve) {
+    var intPromises = [];
+
+    for (var i = 0; i < 31; i++) {
+      intPromises.push(getJourSentSondage(Date.now() - 86400000 * i));
+    }
+
+    Promise.all(intPromises).then(function (data) {
+      resolve(data);
+    });
+  });
+  var getMonthAnsweredSondage = new Promise(function (resolve) {
+    var intPromises = [];
+
+    for (var i = 0; i < 31; i++) {
+      intPromises.push(getJourAnsweredSondage(Date.now() - 86400000 * i));
+    }
+
+    Promise.all(intPromises).then(function (data) {
+      resolve(data);
+    });
+  });
+  var getTodayRate = new Promise(function (resolve) {
+    Promise.all([getJourAnsweredSondage(Date.now()), getJourSentSondage(Date.now())]).then(function (data) {
+      console.log(data);
+      var rate = data[0] / data[1];
+      resolve(rate);
+    });
+  });
+
+  var getDayStatis = function getDayStatis(jour) {
+    return new Promise(function (resolve) {
+      Reponse.findAll({
+        include: [{
+          model: Remplissage,
+          where: {
+            date: jour
+          }
+        }]
+      }).then(function (reps) {
+        if (reps.length > 0) {
+          var satisfaction = 0;
+          reps.forEach(function (rep) {
+            satisfaction += rep.dataValues.valeur;
+          });
+          resolve(satisfaction / reps.length);
+        } else {
+          resolve(0);
+        }
+      });
+    });
+  };
+
+  var getTodayStatis = new Promise(function (resolve) {
+    getDayStatis(Date.now()).then(function (data) {
+      return resolve(data);
+    });
+  });
+  var getWeekStatis = new Promise(function (resolve) {
+    var intPromises = [];
+
+    for (var i = 0; i < 8; i++) {
+      intPromises.push(getDayStatis(Date.now() - 86400000 * i));
+    }
+
+    Promise.all(intPromises).then(function (data) {
+      resolve(data);
+    });
+  });
+  Promise.all([getTotalAnsweredSondage, getTotalSentSondage, getMonthSentSondage, getMonthAnsweredSondage, getTodayRate, getTodayStatis, getWeekStatis]).then(function (statisticTab) {
+    var _statisticTab = _slicedToArray(statisticTab, 7),
+        totalAnsweredSondage = _statisticTab[0],
+        totalSentSondage = _statisticTab[1],
+        monthSentSondage = _statisticTab[2],
+        monthAnsweredSondage = _statisticTab[3],
+        todayAnsweredSendedRate = _statisticTab[4],
+        todayAverageSatisfaction = _statisticTab[5],
+        weekAverageSatisfaction = _statisticTab[6];
 
     next({
-      totalSendedSondage: totalSendedSondage,
-      totalAnsweredSondage: totalAnsweredSondage
+      totalSentSondage: totalSentSondage,
+      totalAnsweredSondage: totalAnsweredSondage,
+      monthSentSondage: monthSentSondage,
+      monthAnsweredSondage: monthAnsweredSondage,
+      todayAnsweredSendedRate: todayAnsweredSendedRate,
+      todayAverageSatisfaction: todayAverageSatisfaction,
+      weekAverageSatisfaction: weekAverageSatisfaction
     });
   });
 };

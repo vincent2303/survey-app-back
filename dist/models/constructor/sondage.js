@@ -36,7 +36,8 @@ var sondageConstructor = function sondageConstructor(sequelize) {
           id: id,
           name: name,
           author: author,
-          createdAt: createdAt
+          createdAt: createdAt,
+          current: false
         }).then(function () {
           resolve();
         });
