@@ -112,7 +112,7 @@ router.post('/singlePost',
 
 router.get('/getSondage', checkToken, (req, res) => {
   Models.Admin.findOne({ where: { id: req.user.id } }).then((admin) => {
-    admin.getSondage().thne((sondageList) => {
+    admin.getSondage().then((sondageList) => {
       console.log("Sent all sondages to client");
       res.status(200).json(sondageList);
     });

@@ -17,24 +17,28 @@ var sondageConstructor = function sondageConstructor(sequelize) {
       allowNull: false,
       type: Sequelize.STRING
     },
-    date_creation: {
+    createdAt: {
       allowNull: false,
       type: Sequelize.DATEONLY
     },
     current: {
-      allowNull: false,
       type: Sequelize.BOOLEAN
     }
+  }, {
+    timestamps: false
   });
 
-  Sondage.addSondage = function (id, author, date_creation, name) {
-    Sondage.sync().then(function () {
-      Sondage.create({
-        id: id,
-        name: name,
-        author: author,
-        date_creation: date_creation,
-        current: false
+  Sondage.addSondage = function (id, author, createdAt, name) {
+    return new Promise(function (resolve) {
+      Sondage.sync().then(function () {
+        Sondage.create({
+          id: id,
+          name: name,
+          author: author,
+          createdAt: createdAt
+        }).then(function () {
+          resolve();
+        });
       });
     });
   };

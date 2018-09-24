@@ -94,7 +94,7 @@ Commentaire.belongsTo(Remplissage, {
   targetKey: 'id'
 }); // Should change this function by using promises more
 
-Admin.prototype.getSondage = function (next) {
+Admin.prototype.getSondage = function () {
   return new Promise(function (resolve) {
     var sondageList = [];
     Sondage.findAll().then(function (sondages) {

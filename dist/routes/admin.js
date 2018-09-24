@@ -111,7 +111,7 @@ router.get('/getSondage', checkToken, function (req, res) {
       id: req.user.id
     }
   }).then(function (admin) {
-    admin.getSondage().thne(function (sondageList) {
+    admin.getSondage().then(function (sondageList) {
       console.log("Sent all sondages to client");
       res.status(200).json(sondageList);
     });

@@ -26,20 +26,31 @@ var adminConstructor = function adminConstructor(sequelize) {
     },
     hash: {
       type: Sequelize.STRING
+    },
+    createdAt: {
+      type: Sequelize.DATE,
+      allowNull: false
     }
+  }, {
+    timestamps: false
   });
 
-  Admin.addAdmin = function (pseudo, password, next) {
-    var salt = crypto.randomBytes(16).toString('hex');
-    Admin.sync().then(function () {
-      Admin.create({
-        id: id_generator(),
-        pseudo: pseudo,
-        salt: salt,
-        hash: crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex')
+  Admin.addAdmin = function (pseudo, password, date) {
+    var createdAt = date || Date.now();
+    return new Promise(function (resolve) {
+      var salt = crypto.randomBytes(16).toString('hex');
+      Admin.sync().then(function () {
+        Admin.create({
+          id: id_generator(),
+          pseudo: pseudo,
+          salt: salt,
+          hash: crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex'),
+          createdAt: createdAt
+        }).then(function () {
+          resolve();
+        });
       });
     });
-    next();
   }; // instance methods
 
 

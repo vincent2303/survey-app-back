@@ -33,26 +33,24 @@ var userConstructor = function userConstructor(sequelize) {
     mailIntensity: {
       type: Sequelize.INTEGER
     }
+  }, {
+    timestamps: false
   }); // Class Methods
 
   User.addUser = function (firstName, lastName, email) {
-    var generatedID = id_generator();
-    User.sync().then(function () {
-      User.create({
-        id: generatedID,
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        mailIntensity: 1,
-        lastMailDate: Date.now()
-      });
-    });
-  };
-
-  User.printAllDates = function () {
-    User.findAll().then(function (users) {
-      users.forEach(function (user) {
-        user.ditLu();
+    return new Promise(function (resolve) {
+      var generatedID = id_generator();
+      User.sync().then(function () {
+        User.create({
+          id: generatedID,
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          mailIntensity: 1,
+          lastMailDate: Date.now()
+        }).then(function () {
+          resolve();
+        });
       });
     });
   }; // Instance methods

@@ -96,7 +96,6 @@ Admin.prototype.getSondage = function () {
   });
 };
 
-<<<<<<< HEAD
 Admin.prototype.createSondage = function (sondage) {
   return new Promise((resolve) => {
     const sondage_id = id_generator();
@@ -121,29 +120,6 @@ Admin.prototype.createSondage = function (sondage) {
       );
     });
     Promise.all(promises).then(resolve);
-=======
-Admin.prototype.createSondage = function (sondage, next) {
-  console.log(sondage);
-  const sondage_id = id_generator();
-  Sondage.addSondage(sondage_id, this.pseudo, Date.now(), sondage.name);
-  sondage.thematiqueList.forEach((thematique) => {
-    Thematique.findOrCreate(
-      { where: { name: thematique.name }, defaults: { name: thematique.name, id: id_generator() } },
-    ).spread(
-      (created_or_found_thematique, created_value) => {
-        if (created_value) {
-          console.log("nouvelle thematique");
-        }
-        thematique.questionList.forEach((question) => {
-          Question.addQuestion(
-            sondage_id, created_or_found_thematique.id,
-            question.text,
-            question.keyWord,
-          );
-        });
-      },
-    );
->>>>>>> origin/promesses
   });
 };
 

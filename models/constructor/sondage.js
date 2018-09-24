@@ -20,7 +20,6 @@ const sondageConstructor = function (sequelize) {
       type: Sequelize.DATEONLY,
     },
     current: {
-      allowNull: true,
       type: Sequelize.BOOLEAN,
     },
   }, {
@@ -40,6 +39,8 @@ const sondageConstructor = function (sequelize) {
       });
     });
   };
+
+  return Sondage;
 };
 
 module.exports = sondageConstructor;
