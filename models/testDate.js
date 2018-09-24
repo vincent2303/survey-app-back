@@ -25,15 +25,9 @@ console.log("");
 //   console.log(customDate2.getTime() > customDate1.getTime());
 // });
 
-const addAdminWithDate = function (pseudo) {
-  Admin.sync().then(() => {
-    Admin.create({
-      id: 'mon id',
-      pseudo,
-      salt: 'fake_salt',
-      hash: 'fake_hash',
-      createAt: new Date(1792, 9, 21),
-    });
-  });
-};
-addAdminWithDate('malcolm');
+const date = new Date(2016, 3, 1);
+console.log(date);
+for (let i = 0; i < 35; i++) {
+  date.setDate(date.getDate() + 1);
+  console.log(date);
+}

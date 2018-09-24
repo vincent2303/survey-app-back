@@ -12,12 +12,18 @@ const thematiqueConstructor = function (sequelize) {
       allowNull: false,
       type: Sequelize.STRING,
     },
+  }, {
+    timestamps: false,
   });
   Thematique.addThematique = function (name) {
-    Thematique.sync().then(() => {
-      Thematique.create({
-        id: id_generator(),
-        name: name,
+    return new Promise(function (resolve) {
+      Thematique.sync().then(() => {
+        Thematique.create({
+          id: id_generator(),
+          name: name,
+        }).then(() => {
+          resolve();
+        });
       });
     });
   };
