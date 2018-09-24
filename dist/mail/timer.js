@@ -11,10 +11,12 @@ var scheduler = function scheduler() {
     console.log("Trying to send mail at: ", Date.now());
     Models.User.findAll().then(function (users) {
       users.forEach(function (data) {
-        Models.Sondage.findAll({
-          limit: 1
+        Models.Sondage.findOne({
+          where: {
+            current: true
+          }
         }).then(function (sondage) {
-          var sondage_id = sondage[0].dataValues.id;
+          var sondage_id = sondage.dataValues.id;
           var token = data.generateJwt(sondage_id);
           var diff = Date.now() - data.dataValues.lastMailDate;
 

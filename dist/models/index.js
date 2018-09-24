@@ -130,7 +130,8 @@ Admin.prototype.getSondage = function (next) {
         sondageList.push({
           id: sondage.dataValues.id,
           name: sondage.dataValues.name,
-          thematiqueList: thematiqueList
+          thematiqueList: thematiqueList,
+          current: sondage.dataValues.current
         });
       });
       next(sondageList);
@@ -330,14 +331,12 @@ User.prototype.updateSondage = function (sondage) {
     });
   });
   sondage.answered_commentaires.forEach(function (commentaire) {
-    console.log("coucouc", commentaire, remplissage_id);
     Commentaire.findOne({
       where: {
         remplissage_id: remplissage_id,
         thematique_id: commentaire.thematique_id
       }
     }).then(function (comment) {
-      console.log(comment);
       Commentaire.updateCommentaire(comment.dataValues.id, commentaire.answer);
     });
   });

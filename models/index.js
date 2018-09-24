@@ -85,6 +85,7 @@ Admin.prototype.getSondage = function (next) {
           id: sondage.dataValues.id, 
           name: sondage.dataValues.name,
           thematiqueList: thematiqueList,
+          current: sondage.dataValues.current,
         });
       });
       next(sondageList);
@@ -259,7 +260,6 @@ User.prototype.updateSondage = function (sondage) {
       });
   });
   sondage.answered_commentaires.forEach((commentaire) => {
-    console.log("coucouc", commentaire, remplissage_id);
     Commentaire.findOne({
       where: {
         remplissage_id: remplissage_id, 
@@ -267,7 +267,6 @@ User.prototype.updateSondage = function (sondage) {
       }, 
     })
       .then((comment) => {
-        console.log(comment);
         Commentaire.updateCommentaire(comment.dataValues.id, commentaire.answer);
       });
   });

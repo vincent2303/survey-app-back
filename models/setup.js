@@ -29,6 +29,7 @@ Admin.sync({ force: true }).then(() => {
         author: "fake_author",
         date_creation: Date.now(),
         name: "fake_name",
+        current: true,
       });
     }).then(() => {
       JourSondage.sync({ force: true }).then(() => {

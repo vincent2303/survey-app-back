@@ -18,9 +18,6 @@ const adminLoginStrategy = require('../passport-config/adminStrategy');
 passport.use(adminLoginStrategy);
 passport.initialize();
 
-// App variables
-const env_var = require('../variables');
-
 // Authentification controllers
 const checkToken = require('../controllers/adminCheckToken');
 
@@ -150,14 +147,16 @@ router.post('/postSondage', checkToken, (req, res) => {
 });
 
 router.post('/changeNextSondage', checkToken, (req, res) => {
-  console.log(req.body);
   if (!req.body) {
     console.log("/!\\ ERROR : Inccorect body");
     res.status(400).send("Bad Request : The body doesnt contain next_sondage ! ");
   } else {
-    env_var.next_sondage = req.body.id;
-    console.log("Changed the sondage to sondage number: ", req.body);
-    res.status(200).json(env_var.next_sondage);
+    Models.Sondage.update({ current: false }, { where: { current: true } }).then(() => {
+      Models.Sondage.update({ current: true }, { where: { id: req.body.id } }).then((sondage) => {
+        console.log("Changed the sondage to sondage: ", req.body.name);
+        res.status(200).json(sondage.dataValues);
+      });
+    });
   }
 });
 

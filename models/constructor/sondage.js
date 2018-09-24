@@ -19,6 +19,10 @@ const sondageConstructor = function (sequelize) {
       allowNull: false,
       type: Sequelize.DATEONLY,
     },
+    current: {
+      allowNull: false,
+      type: Sequelize.BOOLEAN,
+    },
   });
   Sondage.addSondage = function (id, author, date_creation, name) {
     Sondage.sync().then(() => {
@@ -27,6 +31,7 @@ const sondageConstructor = function (sequelize) {
         name: name,
         author: author,
         date_creation: date_creation,
+        current: false,
       });
     });
   };

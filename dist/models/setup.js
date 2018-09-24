@@ -41,7 +41,8 @@ Admin.sync({
         id: "fake_sondage_id",
         author: "fake_author",
         date_creation: Date.now(),
-        name: "fake_name"
+        name: "fake_name",
+        current: true
       });
     }).then(function () {
       JourSondage.sync({

@@ -19,10 +19,7 @@ var passport = require('passport');
 var adminLoginStrategy = require('../passport-config/adminStrategy');
 
 passport.use(adminLoginStrategy);
-passport.initialize(); // App variables
-
-var env_var = require('../variables'); // Authentification controllers
-
+passport.initialize(); // Authentification controllers
 
 var checkToken = require('../controllers/adminCheckToken'); // Récupère les models
 
@@ -152,15 +149,28 @@ router.post('/postSondage', checkToken, function (req, res) {
   });
 });
 router.post('/changeNextSondage', checkToken, function (req, res) {
-  console.log(req.body);
-
   if (!req.body) {
     console.log("/!\\ ERROR : Inccorect body");
     res.status(400).send("Bad Request : The body doesnt contain next_sondage ! ");
   } else {
-    env_var.next_sondage = req.body.id;
-    console.log("Changed the sondage to sondage number: ", req.body);
-    res.status(200).json(env_var.next_sondage);
+    Models.Sondage.update({
+      current: false
+    }, {
+      where: {
+        current: true
+      }
+    }).then(function () {
+      Models.Sondage.update({
+        current: true
+      }, {
+        where: {
+          id: req.body.id
+        }
+      }).then(function (sondage) {
+        console.log("Changed the sondage to sondage: ", req.body.name);
+        res.status(200).json(sondage.dataValues);
+      });
+    });
   }
 }); // Route relative aux statisques
 

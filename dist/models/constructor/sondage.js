@@ -20,6 +20,10 @@ var sondageConstructor = function sondageConstructor(sequelize) {
     date_creation: {
       allowNull: false,
       type: Sequelize.DATEONLY
+    },
+    current: {
+      allowNull: false,
+      type: Sequelize.BOOLEAN
     }
   });
 
@@ -29,7 +33,8 @@ var sondageConstructor = function sondageConstructor(sequelize) {
         id: id,
         name: name,
         author: author,
-        date_creation: date_creation
+        date_creation: date_creation,
+        current: false
       });
     });
   };
