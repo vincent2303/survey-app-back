@@ -28,7 +28,7 @@ const checkToken = require('../controllers/adminCheckToken');
 const Models = require('../models/index');
 
 // Récupère les fonctions de recherche de données
-// const Data = require('../models/dataFetch');
+const Data = require('../models/dataFetch');
 
 router.use(morgan('dev'));
 
@@ -143,17 +143,58 @@ router.post('/postSondage', checkToken, (req, res) => {
   });
 });
 
-router.post('/changeSondage', checkToken, (req, res) => {
-  if (!req.body.next_sondage) {
+router.post('/changeNextSondage', checkToken, (req, res) => {
+  console.log(req.body);
+  if (!req.body) {
     console.log("/!\\ ERROR : Inccorect body");
     res.status(400).send("Bad Request : The body doesnt contain next_sondage ! ");
   } else {
-    env_var.next_sondage = req.body.next_sondage;
+    env_var.next_sondage = req.body.id;
     console.log("Changed the sondage to sondage number: ", req.body);
     res.status(200).json(env_var.next_sondage);
   }
 });
 
+<<<<<<< HEAD
+=======
+// Route relative aux statisques
+
+router.get('/numberRemplissages', checkToken, (req, res) => {
+  console.log(env_var.next_sondage);
+  Data.getNumberRemplissages((count) => {
+    res.status(200).json(count);
+  });
+});
+
+router.get('/numberRemplissagesJour/:jour', checkToken, (req, res) => {
+  Data.getNumberRemplissagesJour(req.params.jour, (count) => {
+    res.status(200).json(count);
+  });
+});
+
+router.get('/getCommentaireJour/:jour', checkToken, (req, res) => {
+  Data.getCommentairesJour(req.params.jour, (comments) => {
+    res.status(200).json(comments);
+  });
+});
+
+router.get('/numberReponses', checkToken, (req, res) => {
+  Data.getNumberReponses((count) => {
+    res.status(200).json(count);
+  });
+});
+
+router.get('/numberReponsesJour/:jour', checkToken, (req, res) => {
+  Data.getNumberReponsesJour(req.params.jour, (count) => {
+    res.status(200).json(count);
+    // router.get("/generalStatistics", checkToken, (req, res) => {
+    //   Models.Admin.findById(req.user.id).then((admin) => {
+    //     console.log(admin.getStatistics());
+  });
+  res.json("ok");
+});
+
+>>>>>>> refs/remotes/origin/dev
 router.get("/generalStatistics", (req, res) => {
   Models.Admin.findById('fake_admin_id').then((admin) => {
     admin.getStatistics((statisticTab) => {

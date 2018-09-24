@@ -10,7 +10,7 @@ const scheduler = function () {
     Models.User.findAll().then((users) => {
       users.forEach((data) => {
         Models.Sondage.findAll().then((sondage) => {
-          const sondage_id = sondage[env_var.next_sondage].dataValues.id;
+          const sondage_id = env_var.next_sondage;
           const token = data.generateJwt(sondage_id);
           const diff = Date.now() - data.dataValues.lastMailDate;
           if (data.dataValues.mailIntensity < diff / (1000 * 60 * 60 * 24) + 0.4) {
