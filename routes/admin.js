@@ -155,46 +155,6 @@ router.post('/changeNextSondage', checkToken, (req, res) => {
   }
 });
 
-<<<<<<< HEAD
-=======
-// Route relative aux statisques
-
-router.get('/numberRemplissages', checkToken, (req, res) => {
-  console.log(env_var.next_sondage);
-  Data.getNumberRemplissages((count) => {
-    res.status(200).json(count);
-  });
-});
-
-router.get('/numberRemplissagesJour/:jour', checkToken, (req, res) => {
-  Data.getNumberRemplissagesJour(req.params.jour, (count) => {
-    res.status(200).json(count);
-  });
-});
-
-router.get('/getCommentaireJour/:jour', checkToken, (req, res) => {
-  Data.getCommentairesJour(req.params.jour, (comments) => {
-    res.status(200).json(comments);
-  });
-});
-
-router.get('/numberReponses', checkToken, (req, res) => {
-  Data.getNumberReponses((count) => {
-    res.status(200).json(count);
-  });
-});
-
-router.get('/numberReponsesJour/:jour', checkToken, (req, res) => {
-  Data.getNumberReponsesJour(req.params.jour, (count) => {
-    res.status(200).json(count);
-    // router.get("/generalStatistics", checkToken, (req, res) => {
-    //   Models.Admin.findById(req.user.id).then((admin) => {
-    //     console.log(admin.getStatistics());
-  });
-  res.json("ok");
-});
-
->>>>>>> refs/remotes/origin/dev
 router.get("/generalStatistics", (req, res) => {
   Models.Admin.findById('fake_admin_id').then((admin) => {
     admin.getStatistics((statisticTab) => {
