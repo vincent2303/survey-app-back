@@ -154,17 +154,10 @@ router.post('/changeSondage', checkToken, (req, res) => {
   }
 });
 
-// router.get("/generalStatistics", checkToken, (req, res) => {
-//   Models.Admin.findById(req.user.id).then((admin) => {
-//     console.log(admin.getStatistics());
-//   });
-//   res.json("ok");
-// });
-
 router.get("/generalStatistics", (req, res) => {
   Models.Admin.findById('fake_admin_id').then((admin) => {
-    admin.getStatistics((statistics) => {
-      res.json(statistics);
+    admin.getStatistics((statisticTab) => {
+      res.json(statisticTab);
     });
   });
 });

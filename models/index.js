@@ -48,21 +48,6 @@ Question.belongsTo(Thematique, { foreignKey: 'thematique_id', targetKey: 'id' })
 Commentaire.belongsTo(Thematique, { foreignKey: 'thematique_id', targetKey: 'id' });
 Commentaire.belongsTo(Remplissage, { foreignKey: 'remplissage_id', targetKey: 'id' });
 
-// --------  instance method ----------
-
-
-// structure input:
-// let sondage = [
-//   {
-//     name: "...",
-//     questions: [
-//       "quelle ... ?",
-//       "avez vous ...?",
-//       "..."
-//     ]
-//   }
-// ]
-
 Admin.prototype.getSondage = function (next) {
   const sondageList = [];
   Sondage.findAll().then((sondages) => {
@@ -138,41 +123,37 @@ Admin.prototype.getStatistics = function (next) {
   const statistics = {
     monthSendedSondage: [],
     monthAnsweredSondage: [],
-    totalSendedSondage: 0,
-    weekSendedSondagePerDay: [],
-    totalAnsweredSondage: 0,
-    weekAnsweredSondagePerDay: [],
+    totalSendedSondage: 0, // fait
+    totalAnsweredSondage: 0, // fait
     todayAnsweredSendedRate: 0, // answer/send
-    weekAnsweredSendedRate: [],
     todayAverageSatisfaction: 0,
     weekAverageSatisfaction: [],
   };
-  JourSondage.sum('nombre_emission').then((totalSendedSondage) => {
-    statistics.totalSendedSondage = totalSendedSondage;
-    Remplissage.count().then((totalAnsweredSondage) => {
-      statistics.totalAnsweredSondage = totalAnsweredSondage;
-      next(statistics);
+  
+  const getTotalAnsweredSondage = new Promise(function (resolve) {
+    Remplissage.count().then((total) => {
+      resolve(total);
+    });
+  });
+
+  const getTotalSendedSondage = new Promise(function (resolve) {
+    JourSondage.sum('nombre_emission').then((total) => {
+      resolve(total);
+    });
+  });
+
+  Promise.all([
+    getTotalAnsweredSondage,
+    getTotalSendedSondage,
+  ]).then((statisticTab) => {
+    const [totalSendedSondage, totalAnsweredSondage] = statisticTab;
+    next({
+      totalSendedSondage: totalSendedSondage,
+      totalAnsweredSondage: totalAnsweredSondage,
     });
   });
 };
 
-// input
-// const sondage = {
-//   remlissage_id: "..."
-//   sondage_id: "..",
-//   answered_questions: [
-//     {
-//       question_id: "...",
-//       answer: "...",
-//     },
-//   answered_commentaires: [
-//     {
-//      thematique_id: "...",
-//      answer: "...",
-//     },
-//   ],
-// };
-// uniquement les questions auxquelles l'ut a repondue, pas de question sans reponses
 User.prototype.answerSondage = function (sondage) {
   const remplissage_id = sondage.remplissage_id;
   Remplissage.addRemplissage(remplissage_id, sondage.sondage_id, this.id, Date.now());
@@ -221,14 +202,5 @@ const Models = {
   Thematique: Thematique,
   Commentaire: Commentaire,
 };
-
-
-// exemple d'update
-// User.update({firstName:"Jean UPDATED :) "},{where:{id:"7k6ngokwvdpjueo7yv3i"}})
-
-// exemple findById
-// User.findById("7k6ngokwvdpjueo7yv3i").then((user)=>{
-//     console.log(user)
-// })
 
 module.exports = Models;
