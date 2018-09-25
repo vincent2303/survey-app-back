@@ -136,19 +136,19 @@ Admin.prototype.getStatisticsSpecific = function (day) {
 };
 
 Admin.prototype.getStatistics = function (next) {
-  // const statistics = {
-  //   monthSentSondage: [], // fait
-  //   monthAnsweredSondage: [], // fait
-  //   totalSentSondage: 0, // fait
-  //   totalAnsweredSondage: 0, // fait
-  //   totalRate: 0,
-  //   totalSatis: 0,
-  //   todayAnsweredSendedRate: 0, // fait
-  //   todayAverageSatisfaction: 0, // fait
-  //   weekAverageSatisfaction: [], // fait
-  //   weekRate: [],
+  const statistics = {
+    monthSentSondage: [], // fait
+    monthAnsweredSondage: [], // fait
+    totalSentSondage: 0, // fait
+    totalAnsweredSondage: 0, // fait
+    totalRate: 0,
+    totalSatis: 0,
+    todayAnsweredSendedRate: 0, // fait
+    todayAverageSatisfaction: 0, // fait
+    monthAverageSatisfaction: [], // fait
+    weekRate: [],
 
-  // };
+  };
   
   const getTotalAnsweredSondage = new Promise(function (resolve) {
     Remplissage.count().then((total) => {
@@ -171,7 +171,9 @@ Admin.prototype.getStatistics = function (next) {
   });
 
   const getTotalSatis = new Promise((resolve) => {
-    Reponse.sum('valeur').then(val => resolve(val));
+    Reponse.sum('valeur').then((val) => {
+      Reponse.count().then(total => resolve(val / total));
+    });
   });
 
   const getJourSentSondage = jour => new Promise((resolve) => {
@@ -256,9 +258,9 @@ Admin.prototype.getStatistics = function (next) {
     getDayRate(Date.now()).then(data => resolve(data));
   });
 
-  const getWeekStatis = new Promise((resolve) => {
+  const getMonthStatis = new Promise((resolve) => {
     const intPromises = [];
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 31; i++) {
       intPromises.push(getDayStatis(Date.now() - (86400000 * i)));
     }
     Promise.all(intPromises).then((data) => {
@@ -285,7 +287,7 @@ Admin.prototype.getStatistics = function (next) {
     getMonthAnsweredSondage,
     getTodayRate,
     getTodayStatis,
-    getWeekStatis,
+    getMonthStatis,
     getWeekRate,
   ]).then((statisticTab) => {
     const [
@@ -297,7 +299,7 @@ Admin.prototype.getStatistics = function (next) {
       monthAnsweredSondage,
       todayAnsweredSendedRate,
       todayAverageSatisfaction,
-      weekAverageSatisfaction,
+      monthAverageSatisfaction,
       weekRate,
     ] = statisticTab;
     next({
@@ -309,7 +311,7 @@ Admin.prototype.getStatistics = function (next) {
       monthAnsweredSondage: monthAnsweredSondage,
       todayAnsweredSendedRate: todayAnsweredSendedRate,
       todayAverageSatisfaction: todayAverageSatisfaction,
-      weekAverageSatisfaction: weekAverageSatisfaction,
+      monthAverageSatisfaction: monthAverageSatisfaction,
       weekRate: weekRate,
     });
   });

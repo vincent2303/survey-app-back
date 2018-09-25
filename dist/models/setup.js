@@ -172,9 +172,109 @@ var suppressionTables = function suppressionTables() {
   });
 };
 
-suppressionTables().then(function () {
-  creationTable().then(function () {
-    console.log("tables mises à jours");
+var setupTables = function setupTables() {
+  return new Promise(function (resolve) {
+    suppressionTables().then(function () {
+      creationTable().then(function () {
+        resolve();
+      });
+    });
   });
-});
+};
+
+var delReponse = function delReponse() {
+  return new Promise(function (resolve) {
+    Reponse.findOne().then(function (elem) {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+
+var delCommentaire = function delCommentaire() {
+  return new Promise(function (resolve) {
+    Commentaire.findOne().then(function (elem) {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+
+var delJourSondage = function delJourSondage() {
+  return new Promise(function (resolve) {
+    JourSondage.findOne().then(function (elem) {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+
+var delQuestion = function delQuestion() {
+  return new Promise(function (resolve) {
+    Question.findOne().then(function (elem) {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+
+var delRemplissage = function delRemplissage() {
+  return new Promise(function (resolve) {
+    Remplissage.findOne().then(function (elem) {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+
+var delThematique = function delThematique() {
+  return new Promise(function (resolve) {
+    Thematique.findOne().then(function (elem) {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+
+var delSondage = function delSondage() {
+  return new Promise(function (resolve) {
+    Sondage.findOne().then(function (elem) {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+
+var delUser = function delUser() {
+  return new Promise(function (resolve) {
+    User.findOne().then(function (elem) {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+
+var delAdmin = function delAdmin() {
+  return new Promise(function (resolve) {
+    Admin.findOne().then(function (elem) {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+
+var clearTable = function clearTable() {
+  return new Promise(function (resolve) {
+    setupTables().then(function () {
+      var promises = [];
+      promises.push(delReponse(), delCommentaire(), delJourSondage());
+      Promise.all(promises).then(function () {
+        promises = [delQuestion(), delRemplissage()];
+        Promise.all(promises).then(function () {
+          promises = [delThematique(), delSondage()];
+          Promise.all(promises).then(function () {
+            promises = [delUser(), delAdmin()];
+            Promise.all(promises).then(function () {
+              console.log("Tables nettoyées");
+              resolve();
+            });
+          });
+        });
+      });
+    });
+  });
+};
+
+module.exports = clearTable;
 //# sourceMappingURL=setup.js.map

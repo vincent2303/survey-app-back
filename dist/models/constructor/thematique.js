@@ -20,13 +20,19 @@ var thematiqueConstructor = function thematiqueConstructor(sequelize) {
   });
 
   Thematique.addThematique = function (name) {
+    // id optionnal
     return new Promise(function (resolve) {
       Thematique.sync().then(function () {
-        Thematique.create({
-          id: id_generator(),
-          name: name
-        }).then(function () {
-          resolve();
+        Thematique.findOrCreate({
+          where: {
+            name: name
+          },
+          defaults: {
+            name: name,
+            id: id_generator()
+          }
+        }).spread(function (thematique) {
+          resolve(thematique.dataValues);
         });
       });
     });
