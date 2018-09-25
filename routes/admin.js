@@ -188,7 +188,7 @@ router.get("/generalStatistics", checkToken, (req, res) => {
 
 router.post("/specificStatistics", checkToken, (req, res) => {
   Models.Admin.findById(req.user.id).then((admin) => {
-    res.json(admin.getStatisticsSpecific(req.body.sondageDate));
+    res.json(admin.getStatisticsSpecific(req.body.date));
   });
 });
 
