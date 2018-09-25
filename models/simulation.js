@@ -7,22 +7,9 @@ const {
   Sondage, Thematique, User, Reponse, Question, Remplissage, Admin, JourSondage, Commentaire,
 } = Models;
 
-const alert = function (elem) {
-  console.log(" --------------------------------------------- ");
-  console.log("");
-  console.log(elem);
-  console.log("");
-  console.log("");
-};
-
-
-const startYear = 2018;
-const startMonth = 1;
-const startDay = 1;
-const dayDuration = 30;
-
-const simulationDay = new Date(startYear, startMonth, startDay);
-
+const simulationTime = 35;
+const simulationDay = new Date();
+simulationDay.setDate(simulationDay.getDate() - simulationTime);
 
 const fakeSurvey = {
   name: 'simulation_survey',
@@ -193,8 +180,10 @@ const Alldays = function (compteur) {
 };
 
 clearTables().then(() => {
-  alert(simulationDay);
+  console.log("");
+  console.log("------------------------------------------");
+  console.log("");
   firstDay().then(() => {
-    Alldays(30);
+    Alldays(simulationTime);
   });
 });
