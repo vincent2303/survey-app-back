@@ -47,6 +47,7 @@ var adminConstructor = function adminConstructor(sequelize) {
           hash: crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex'),
           createdAt: createdAt
         }).then(function () {
+          console.log("Ajout Admin $$$");
           resolve();
         });
       });

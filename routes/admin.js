@@ -82,8 +82,9 @@ router.post('/csvPost',
 router.post('/singlePost',
   checkToken,
   (req, res) => {
-    Models.User.addUser(req.body.firstName, req.body.lastName, req.body.email).then(() => {
+    Models.User.addUser(req.body.user.firstName, req.body.user.lastName, req.body.user.email).then(() => {
       res.status(200).send(req.body.email);
+      console.log("New user added: ", req.body.user);
     });
   }); 
 

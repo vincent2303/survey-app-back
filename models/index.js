@@ -132,7 +132,6 @@ Admin.prototype.createSondage = function (sondage) {
 };
 
 Admin.prototype.getStatistics = function (next) {
-<<<<<<< HEAD
   const statistics = {
     monthSentSondage: [], // fait
     monthAnsweredSondage: [], // fait
@@ -144,21 +143,8 @@ Admin.prototype.getStatistics = function (next) {
     todayAverageSatisfaction: 0, // fait
     monthAverageSatisfaction: [], // fait
     weekRate: [],
-=======
-  // const statistics = {
-  //   monthSentSondage: [], // fait
-  //   monthAnsweredSondage: [], // fait
-  //   totalSentSondage: 0, // fait
-  //   totalAnsweredSondage: 0, // fait
-  //   totalRate: 0,
-  //   totalSatis: 0,
-  //   todayAnsweredSendedRate: 0, // fait
-  //   todayAverageSatisfaction: 0, // fait
-  //   weekAverageSatisfaction: [], // fait
-  //   weekRate: [],
->>>>>>> 55b2e9a22fbbf9da8f9d225a8482ee85a3968674
 
-  // };
+  };
   
   const getTotalAnsweredSondage = new Promise(function (resolve) {
     Remplissage.count().then((total) => {

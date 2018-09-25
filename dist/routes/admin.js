@@ -80,8 +80,9 @@ router.post('/csvPost', checkToken, function (req, res) {
   });
 });
 router.post('/singlePost', checkToken, function (req, res) {
-  Models.User.addUser(req.body.firstName, req.body.lastName, req.body.email).then(function () {
+  Models.User.addUser(req.body.user.firstName, req.body.user.lastName, req.body.user.email).then(function () {
     res.status(200).send(req.body.email);
+    console.log("New user added: ", req.body.user);
   });
 }); // Route relative à l'affichage et la creation de sondage
 

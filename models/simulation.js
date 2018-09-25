@@ -128,6 +128,7 @@ const firstDay = function () {
       addManyUsers(10).then(() => {
         Admin.findOne({ where: { pseudo: 'Vince' } }).then((admin) => {
           admin.createSondage(fakeSurvey).then((sondage_id) => {
+            Sondage.update({ current: true }, { where: { id: sondage_id } });
             getQuestionIdList(sondage_id).then(() => {
               answerAll().then(() => { 
                 incrementDay();

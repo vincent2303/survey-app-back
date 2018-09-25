@@ -31,9 +31,8 @@ var sondageConstructor = require('./constructor/sondage');
 
 var thematiqueConstructor = require('./constructor/thematique');
 
-var commentaireConstructor = require('./constructor/commentaire');
+var commentaireConstructor = require('./constructor/commentaire'); // sequelize connection
 
-var Op = Sequelize.Op; // sequelize connection
 
 var sequelize = new Sequelize(env.database, env.username, env.password, {
   host: env.host,
@@ -142,33 +141,40 @@ Admin.prototype.getSondage = function () {
   });
 };
 
+var addThematiqueId = function addThematiqueId(thematiqueList, thematiqueListWithId) {
+  thematiqueList.forEach(function (thematique) {
+    thematiqueListWithId.forEach(function (thematiqueWithId) {
+      if (thematiqueWithId.name === thematique.name) {
+        thematique.id = thematiqueWithId.id;
+      }
+    });
+  });
+  return thematiqueList;
+};
+
 Admin.prototype.createSondage = function (sondage) {
   var _this = this;
 
   return new Promise(function (resolve) {
     var sondage_id = id_generator();
-    var promises = [];
-    promises.push(Sondage.addSondage(sondage_id, _this.pseudo, Date.now(), sondage.name));
-    sondage.thematiqueList.forEach(function (thematique) {
-      Thematique.findOrCreate({
-        where: {
-          name: thematique.name
-        },
-        defaults: {
-          name: thematique.name,
-          id: id_generator()
-        }
-      }).spread(function (created_or_found_thematique, created_value) {
-        if (created_value) {
-          console.log("nouvelle thematique");
-        }
-
-        thematique.questionList.forEach(function (question) {
-          promises.push(Question.addQuestion(sondage_id, created_or_found_thematique.id, question.text, question.keyWord));
+    Sondage.addSondage(sondage_id, _this.pseudo, Date.now(), sondage.name).then(function () {
+      var promises = [];
+      sondage.thematiqueList.forEach(function (thematique) {
+        promises.push(Thematique.addThematique(thematique.name));
+      });
+      Promise.all(promises).then(function (thematiqueListWithId) {
+        addThematiqueId(sondage.thematiqueList, thematiqueListWithId);
+        promises = [];
+        sondage.thematiqueList.forEach(function (thematique) {
+          thematique.questionList.forEach(function (question) {
+            promises.push(Question.addQuestion(sondage_id, thematique.id, question.text, question.keyWord));
+          });
+        });
+        Promise.all(promises).then(function () {
+          resolve(sondage_id);
         });
       });
     });
-    Promise.all(promises).then(resolve);
   });
 };
 
@@ -482,20 +488,25 @@ User.prototype.findSondage = function (req) {
 // uniquement les questions auxquelles l'ut a repondue, pas de question sans reponses
 
 
-User.prototype.answerSondage = function (sondage) {
+User.prototype.answerSondage = function (sondage, simulationDate) {
   var _this2 = this;
 
+  var date = simulationDate || Date.now();
   return new Promise(function (resolve) {
     var remplissage_id = sondage.remplissage_id;
-    var Promises = [];
-    Promises.push(Remplissage.addRemplissage(remplissage_id, sondage.sondage_id, _this2.id, Date.now()));
-    sondage.answered_questions.forEach(function (question) {
-      Promises.push(Reponse.addReponse(remplissage_id, question.question_id, question.answer));
+    var sondage_id = sondage.sondage_id;
+    Remplissage.addRemplissage(remplissage_id, sondage_id, _this2.id, date).then(function () {
+      var promises = [];
+      sondage.answered_questions.forEach(function (question_answer) {
+        promises.push(Reponse.addReponse(remplissage_id, question_answer.question_id, question_answer.answer));
+      });
+      sondage.answered_commentaires.forEach(function (commentaire_answer) {
+        promises.push(Commentaire.addCommentaire(remplissage_id, commentaire_answer.thematique_id, commentaire_answer.answer));
+      });
+      Promise.all(promises).then(function () {
+        resolve();
+      });
     });
-    sondage.answered_commentaires.forEach(function (commentaire) {
-      Promises.push(Commentaire.addCommentaire(remplissage_id, commentaire.thematique_id, commentaire.answer));
-    });
-    Promise.all(Promises).then(resolve);
   });
 };
 
