@@ -149,8 +149,18 @@ const suppressionTables = function () {
   });
 };
 
-suppressionTables().then(() => {
-  creationTable().then(() => {
-    console.log("tables mises à jours");
+const setupTables = function () {
+  return new Promise(function (resolve) {
+    suppressionTables().then(() => {
+      creationTable().then(() => {
+        console.log("tables mises à jours");
+        resolve();
+      });
+    });
   });
+};
+
+setupTables().then(() => {
+  const promises = [];
+  Reponse.findOne();
 });
