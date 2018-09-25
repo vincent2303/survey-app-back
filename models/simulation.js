@@ -1,16 +1,14 @@
 const Models = require("./index");
 const randInt = require('../custom_module/randInt');
 const id_generator = require('../custom_module/id_generator');
+const clearTables = require('./setup');
 
 const { 
   Sondage, Thematique, User, Reponse, Question, Remplissage, Admin, JourSondage, Commentaire,
 } = Models;
 
 const alert = function (elem) {
-  console.log("");
-  console.log("");
   console.log(" --------------------------------------------- ");
-  console.log("");
   console.log("");
   console.log(elem);
   console.log("");
@@ -115,6 +113,7 @@ const answerSondage_simulation = function (user, date) {
 const answerUserListSondage_simulation = function (users, date) {
   return new Promise(function (resolve) {
     const promiseArray = [];
+    JourSondage.addJourSondage(fakeSurvey_id, simulationDay, users.length);
     users.forEach((user) => {
       promiseArray.push(answerSondage_simulation(user, date));
     });
@@ -193,8 +192,9 @@ const Alldays = function (compteur) {
   }
 };
 
-
-alert(simulationDay);
-firstDay().then(() => {
-  Alldays(30);
+clearTables().then(() => {
+  alert(simulationDay);
+  firstDay().then(() => {
+    Alldays(30);
+  });
 });
