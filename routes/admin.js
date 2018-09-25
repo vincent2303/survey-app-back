@@ -185,6 +185,12 @@ router.get("/generalStatistics", checkToken, (req, res) => {
   });
 });
 
+router.post("/specificStatistics", checkToken, (req, res) => {
+  Models.Admin.findById(req.user.id).then((admin) => {
+    res.json(admin.getStatisticsSpecific(req.body.sondageDate));
+  });
+});
+
 router.use((err, req, res, next) => {
   console.log("error: ", err.name);
   if (err.name === 'UnauthorizedError') {

@@ -131,6 +131,10 @@ Admin.prototype.createSondage = function (sondage) {
   });
 };
 
+Admin.prototype.getStatisticsSpecific = function (day) {
+  return day;
+};
+
 Admin.prototype.getStatistics = function (next) {
   // const statistics = {
   //   monthSentSondage: [], // fait
