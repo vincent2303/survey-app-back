@@ -188,7 +188,7 @@ Admin.prototype.getStatistics = function (next) {
     // fait
     todayAverageSatisfaction: 0,
     // fait
-    weekAverageSatisfaction: [],
+    monthAverageSatisfaction: [],
     // fait
     weekRate: []
   };
@@ -210,7 +210,9 @@ Admin.prototype.getStatistics = function (next) {
   });
   var getTotalSatis = new Promise(function (resolve) {
     Reponse.sum('valeur').then(function (val) {
-      return resolve(val);
+      Reponse.count().then(function (total) {
+        return resolve(val / total);
+      });
     });
   });
 
@@ -320,10 +322,10 @@ Admin.prototype.getStatistics = function (next) {
       return resolve(data);
     });
   });
-  var getWeekStatis = new Promise(function (resolve) {
+  var getMonthStatis = new Promise(function (resolve) {
     var intPromises = [];
 
-    for (var i = 0; i < 8; i++) {
+    for (var i = 0; i < 31; i++) {
       intPromises.push(getDayStatis(Date.now() - 86400000 * i));
     }
 
@@ -342,7 +344,7 @@ Admin.prototype.getStatistics = function (next) {
       resolve(data);
     });
   });
-  Promise.all([getTotalAnsweredSondage, getTotalSentSondage, getTotalRate, getTotalSatis, getMonthSentSondage, getMonthAnsweredSondage, getTodayRate, getTodayStatis, getWeekStatis, getWeekRate]).then(function (statisticTab) {
+  Promise.all([getTotalAnsweredSondage, getTotalSentSondage, getTotalRate, getTotalSatis, getMonthSentSondage, getMonthAnsweredSondage, getTodayRate, getTodayStatis, getMonthStatis, getWeekRate]).then(function (statisticTab) {
     var _statisticTab = _slicedToArray(statisticTab, 10),
         totalAnsweredSondage = _statisticTab[0],
         totalSentSondage = _statisticTab[1],
@@ -352,7 +354,7 @@ Admin.prototype.getStatistics = function (next) {
         monthAnsweredSondage = _statisticTab[5],
         todayAnsweredSendedRate = _statisticTab[6],
         todayAverageSatisfaction = _statisticTab[7],
-        weekAverageSatisfaction = _statisticTab[8],
+        monthAverageSatisfaction = _statisticTab[8],
         weekRate = _statisticTab[9];
 
     next({
@@ -364,7 +366,7 @@ Admin.prototype.getStatistics = function (next) {
       monthAnsweredSondage: monthAnsweredSondage,
       todayAnsweredSendedRate: todayAnsweredSendedRate,
       todayAverageSatisfaction: todayAverageSatisfaction,
-      weekAverageSatisfaction: weekAverageSatisfaction,
+      monthAverageSatisfaction: monthAverageSatisfaction,
       weekRate: weekRate
     });
   });
