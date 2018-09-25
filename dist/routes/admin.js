@@ -60,8 +60,7 @@ router.post('/login', passport.authenticate('local', {
 // Routes relatives a la gestion des admins et des users
 
 router.post('/createAdmin', checkToken, function (req, res) {
-  console.log("creating admin ".concat(req.body.pseudo));
-  console.log(req.body); // On vérifie que les données minmums pour créer un utilisateur sont bien présentes
+  console.log("creating admin ".concat(req.body.pseudo)); // On vérifie que les données minmums pour créer un utilisateur sont bien présentes
 
   if (!req.body.pseudo || !req.body.mp) {
     console.log("/!\\ ERROR : The body of the create admin request doesnt contain pseudo or mp !");
@@ -69,7 +68,7 @@ router.post('/createAdmin', checkToken, function (req, res) {
   } else {
     Models.Admin.addAdmin(req.body.pseudo, req.body.mp, Date.now()).then(function () {
       console.log("Added admin: ".concat(req.body.pseudo));
-      res.status(200).send("User ".concat(req.body.firstName, " ").concat(req.body.lastName, " created"));
+      res.status(200).send("Admin ".concat(req.body.pseudo, " created"));
     });
   }
 });
@@ -82,7 +81,7 @@ router.post('/csvPost', checkToken, function (req, res) {
 });
 router.post('/singlePost', checkToken, function (req, res) {
   Models.User.addUser(req.body.firstName, req.body.lastName, req.body.email).then(function () {
-    res.status(200).send("single user added : ", req.body.email);
+    res.status(200).send(req.body.email);
   });
 }); // Route relative à l'affichage et la creation de sondage
 
@@ -186,8 +185,8 @@ router.get('/numberReponsesJour/:jour', checkToken, function (req, res) {
   });
   res.json("ok");
 });
-router.get("/generalStatistics", function (req, res) {
-  Models.Admin.findById('fake_admin_id').then(function (admin) {
+router.get("/generalStatistics", checkToken, function (req, res) {
+  Models.Admin.findById(req.user.id).then(function (admin) {
     admin.getStatistics(function (statisticTab) {
       res.json(statisticTab);
     });

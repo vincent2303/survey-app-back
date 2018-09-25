@@ -21,7 +21,6 @@ var userCheckToken = require('../controllers/userCheckToken'); // front send un 
 
 
 router.get('/getSondage', userCheckToken, function (req, res) {
-  console.log("info: ", req.user);
   Models.User.findOne({
     where: {
       id: req.user.user_id
