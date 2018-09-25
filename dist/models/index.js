@@ -182,11 +182,15 @@ Admin.prototype.getStatistics = function (next) {
     // fait
     totalAnsweredSondage: 0,
     // fait
+    totalRate: 0,
+    totalSatis: 0,
     todayAnsweredSendedRate: 0,
     // fait
     todayAverageSatisfaction: 0,
     // fait
-    weekAverageSatisfaction: []
+    weekAverageSatisfaction: [],
+    // fait
+    weekRate: []
   };
   var getTotalAnsweredSondage = new Promise(function (resolve) {
     Remplissage.count().then(function (total) {
@@ -196,6 +200,17 @@ Admin.prototype.getStatistics = function (next) {
   var getTotalSentSondage = new Promise(function (resolve) {
     JourSondage.sum('nombre_emission').then(function (total) {
       resolve(total);
+    });
+  });
+  var getTotalRate = new Promise(function (resolve) {
+    Promise.all([getTotalAnsweredSondage, getTotalSentSondage]).then(function (data) {
+      var rate = data[0] / data[1];
+      resolve(rate);
+    });
+  });
+  var getTotalSatis = new Promise(function (resolve) {
+    Reponse.sum('valeur').then(function (val) {
+      return resolve(val);
     });
   });
 
@@ -254,13 +269,6 @@ Admin.prototype.getStatistics = function (next) {
       resolve(data);
     });
   });
-  var getTodayRate = new Promise(function (resolve) {
-    Promise.all([getJourAnsweredSondage(Date.now()), getJourSentSondage(Date.now())]).then(function (data) {
-      console.log(data);
-      var rate = data[0] / data[1];
-      resolve(rate);
-    });
-  });
 
   var getDayStatis = function getDayStatis(jour) {
     return new Promise(function (resolve) {
@@ -285,8 +293,30 @@ Admin.prototype.getStatistics = function (next) {
     });
   };
 
+  var getDayRate = function getDayRate(jour) {
+    return new Promise(function (resolve) {
+      Promise.all([getJourAnsweredSondage(jour), getJourSentSondage(jour)]).then(function (data) {
+        console.log(data);
+        var rate = Number;
+
+        if (data[1] !== 0) {
+          rate = data[0] / data[1];
+        } else {
+          rate = 0;
+        }
+
+        resolve(rate);
+      });
+    });
+  };
+
   var getTodayStatis = new Promise(function (resolve) {
     getDayStatis(Date.now()).then(function (data) {
+      return resolve(data);
+    });
+  });
+  var getTodayRate = new Promise(function (resolve) {
+    getDayRate(Date.now()).then(function (data) {
       return resolve(data);
     });
   });
@@ -301,24 +331,41 @@ Admin.prototype.getStatistics = function (next) {
       resolve(data);
     });
   });
-  Promise.all([getTotalAnsweredSondage, getTotalSentSondage, getMonthSentSondage, getMonthAnsweredSondage, getTodayRate, getTodayStatis, getWeekStatis]).then(function (statisticTab) {
-    var _statisticTab = _slicedToArray(statisticTab, 7),
+  var getWeekRate = new Promise(function (resolve) {
+    var intPromises = [];
+
+    for (var i = 0; i < 8; i++) {
+      intPromises.push(getDayRate(Date.now() - 86400000 * i));
+    }
+
+    Promise.all(intPromises).then(function (data) {
+      resolve(data);
+    });
+  });
+  Promise.all([getTotalAnsweredSondage, getTotalSentSondage, getTotalRate, getTotalSatis, getMonthSentSondage, getMonthAnsweredSondage, getTodayRate, getTodayStatis, getWeekStatis, getWeekRate]).then(function (statisticTab) {
+    var _statisticTab = _slicedToArray(statisticTab, 10),
         totalAnsweredSondage = _statisticTab[0],
         totalSentSondage = _statisticTab[1],
-        monthSentSondage = _statisticTab[2],
-        monthAnsweredSondage = _statisticTab[3],
-        todayAnsweredSendedRate = _statisticTab[4],
-        todayAverageSatisfaction = _statisticTab[5],
-        weekAverageSatisfaction = _statisticTab[6];
+        totalRate = _statisticTab[2],
+        totalSatis = _statisticTab[3],
+        monthSentSondage = _statisticTab[4],
+        monthAnsweredSondage = _statisticTab[5],
+        todayAnsweredSendedRate = _statisticTab[6],
+        todayAverageSatisfaction = _statisticTab[7],
+        weekAverageSatisfaction = _statisticTab[8],
+        weekRate = _statisticTab[9];
 
     next({
       totalSentSondage: totalSentSondage,
       totalAnsweredSondage: totalAnsweredSondage,
+      totalRate: totalRate,
+      totalSatis: totalSatis,
       monthSentSondage: monthSentSondage,
       monthAnsweredSondage: monthAnsweredSondage,
       todayAnsweredSendedRate: todayAnsweredSendedRate,
       todayAverageSatisfaction: todayAverageSatisfaction,
-      weekAverageSatisfaction: weekAverageSatisfaction
+      weekAverageSatisfaction: weekAverageSatisfaction,
+      weekRate: weekRate
     });
   });
 };

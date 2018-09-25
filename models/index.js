@@ -133,9 +133,13 @@ Admin.prototype.getStatistics = function (next) {
     monthAnsweredSondage: [], // fait
     totalSentSondage: 0, // fait
     totalAnsweredSondage: 0, // fait
+    totalRate: 0,
+    totalSatis: 0,
     todayAnsweredSendedRate: 0, // fait
     todayAverageSatisfaction: 0, // fait
     weekAverageSatisfaction: [], // fait
+    weekRate: [],
+
   };
   
   const getTotalAnsweredSondage = new Promise(function (resolve) {
@@ -148,6 +152,18 @@ Admin.prototype.getStatistics = function (next) {
     JourSondage.sum('nombre_emission').then((total) => {
       resolve(total);
     });
+  });
+
+  const getTotalRate = new Promise((resolve) => {
+    Promise.all([getTotalAnsweredSondage, getTotalSentSondage])
+      .then(((data) => {
+        const rate = data[0] / data[1];
+        resolve(rate);
+      }));
+  });
+
+  const getTotalSatis = new Promise((resolve) => {
+    Reponse.sum('valeur').then(val => resolve(val));
   });
 
   const getJourSentSondage = jour => new Promise((resolve) => {
@@ -191,15 +207,6 @@ Admin.prototype.getStatistics = function (next) {
     });
   });
 
-  const getTodayRate = new Promise((resolve) => {
-    Promise.all([getJourAnsweredSondage(Date.now()), getJourSentSondage(Date.now())])
-      .then(((data) => {
-        console.log(data);
-        const rate = data[0] / data[1];
-        resolve(rate);
-      }));
-  });
-
   const getDayStatis = jour => new Promise((resolve) => {
     Reponse.findAll({
       include: [{
@@ -218,9 +225,27 @@ Admin.prototype.getStatistics = function (next) {
       }
     });
   });
+  
+  const getDayRate = jour => new Promise((resolve) => {
+    Promise.all([getJourAnsweredSondage(jour), getJourSentSondage(jour)])
+      .then(((data) => {
+        console.log(data);
+        let rate = Number;
+        if (data[1] !== 0) {
+          rate = data[0] / data[1];
+        } else {
+          rate = 0;
+        }
+        resolve(rate);
+      }));
+  });
 
   const getTodayStatis = new Promise((resolve) => {
     getDayStatis(Date.now()).then(data => resolve(data));
+  });
+
+  const getTodayRate = new Promise((resolve) => {
+    getDayRate(Date.now()).then(data => resolve(data));
   });
 
   const getWeekStatis = new Promise((resolve) => {
@@ -233,31 +258,51 @@ Admin.prototype.getStatistics = function (next) {
     });
   });
 
+  const getWeekRate = new Promise((resolve) => {
+    const intPromises = [];
+    for (let i = 0; i < 8; i++) {
+      intPromises.push(getDayRate(Date.now() - (86400000 * i)));
+    }
+    Promise.all(intPromises).then((data) => {
+      resolve(data);
+    });
+  });
+
   Promise.all([
     getTotalAnsweredSondage,
     getTotalSentSondage,
+    getTotalRate,
+    getTotalSatis,
     getMonthSentSondage,
     getMonthAnsweredSondage,
     getTodayRate,
     getTodayStatis,
     getWeekStatis,
+    getWeekRate,
   ]).then((statisticTab) => {
     const [
       totalAnsweredSondage, 
       totalSentSondage, 
+      totalRate,
+      totalSatis,
       monthSentSondage, 
       monthAnsweredSondage,
       todayAnsweredSendedRate,
       todayAverageSatisfaction,
-      weekAverageSatisfaction] = statisticTab;
+      weekAverageSatisfaction,
+      weekRate,
+    ] = statisticTab;
     next({
       totalSentSondage: totalSentSondage,
       totalAnsweredSondage: totalAnsweredSondage,
+      totalRate: totalRate,
+      totalSatis: totalSatis,
       monthSentSondage: monthSentSondage,
       monthAnsweredSondage: monthAnsweredSondage,
       todayAnsweredSendedRate: todayAnsweredSendedRate,
       todayAverageSatisfaction: todayAverageSatisfaction,
       weekAverageSatisfaction: weekAverageSatisfaction,
+      weekRate: weekRate,
     });
   });
 };
