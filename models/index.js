@@ -13,7 +13,6 @@ const sondageConstructor = require('./constructor/sondage');
 const thematiqueConstructor = require('./constructor/thematique');
 const commentaireConstructor = require('./constructor/commentaire');
 
-const Op = Sequelize.Op;
 // sequelize connection
 const sequelize = new Sequelize(env.database, env.username, env.password, {
   host: env.host,
@@ -133,19 +132,19 @@ Admin.prototype.createSondage = function (sondage) {
 };
 
 Admin.prototype.getStatistics = function (next) {
-  const statistics = {
-    monthSentSondage: [], // fait
-    monthAnsweredSondage: [], // fait
-    totalSentSondage: 0, // fait
-    totalAnsweredSondage: 0, // fait
-    totalRate: 0,
-    totalSatis: 0,
-    todayAnsweredSendedRate: 0, // fait
-    todayAverageSatisfaction: 0, // fait
-    weekAverageSatisfaction: [], // fait
-    weekRate: [],
+  // const statistics = {
+  //   monthSentSondage: [], // fait
+  //   monthAnsweredSondage: [], // fait
+  //   totalSentSondage: 0, // fait
+  //   totalAnsweredSondage: 0, // fait
+  //   totalRate: 0,
+  //   totalSatis: 0,
+  //   todayAnsweredSendedRate: 0, // fait
+  //   todayAverageSatisfaction: 0, // fait
+  //   weekAverageSatisfaction: [], // fait
+  //   weekRate: [],
 
-  };
+  // };
   
   const getTotalAnsweredSondage = new Promise(function (resolve) {
     Remplissage.count().then((total) => {

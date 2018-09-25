@@ -4,7 +4,7 @@ const id_generator = require('../custom_module/id_generator');
 const clearTables = require('./setup');
 
 const { 
-  Sondage, Thematique, User, Reponse, Question, Remplissage, Admin, JourSondage, Commentaire,
+  Sondage, User, Reponse, Question, Remplissage, Admin, JourSondage,
 } = Models;
 
 const simulationTime = 35;
