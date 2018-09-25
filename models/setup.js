@@ -149,8 +149,106 @@ const suppressionTables = function () {
   });
 };
 
-suppressionTables().then(() => {
-  creationTable().then(() => {
-    console.log("tables mises à jours");
+const setupTables = function () {
+  return new Promise(function (resolve) {
+    suppressionTables().then(() => {
+      creationTable().then(() => {
+        resolve();
+      });
+    });
   });
-});
+};
+
+const delReponse = function () {
+  return new Promise(function (resolve) {
+    Reponse.findOne().then((elem) => {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+
+const delCommentaire = function () {
+  return new Promise(function (resolve) {
+    Commentaire.findOne().then((elem) => {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+
+const delJourSondage = function () {
+  return new Promise(function (resolve) {
+    JourSondage.findOne().then((elem) => {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+
+const delQuestion = function () {
+  return new Promise(function (resolve) {
+    Question.findOne().then((elem) => {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+const delRemplissage = function () {
+  return new Promise(function (resolve) {
+    Remplissage.findOne().then((elem) => {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+
+const delThematique = function () {
+  return new Promise(function (resolve) {
+    Thematique.findOne().then((elem) => {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+const delSondage = function () {
+  return new Promise(function (resolve) {
+    Sondage.findOne().then((elem) => {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+
+const delUser = function () {
+  return new Promise(function (resolve) {
+    User.findOne().then((elem) => {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+
+const delAdmin = function () {
+  return new Promise(function (resolve) {
+    Admin.findOne().then((elem) => {
+      elem.destroy().then(resolve);
+    });
+  });
+};
+
+const clearTable = function () {
+  return new Promise(function (resolve) {
+    setupTables().then(() => {
+      let promises = [];
+      promises.push(delReponse(), delCommentaire(), delJourSondage());
+      Promise.all(promises).then(() => {
+        promises = [delQuestion(), delRemplissage()];
+        Promise.all(promises).then(() => {
+          promises = [delThematique(), delSondage()];
+          Promise.all(promises).then(() => {
+            promises = [delUser(), delAdmin()];
+            Promise.all(promises).then(() => {
+              console.log("Tables nettoyées");
+              resolve();
+            });
+          });
+        });
+      });
+    });
+  });
+};
+
+module.exports = clearTable;
