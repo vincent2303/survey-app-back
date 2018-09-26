@@ -268,14 +268,14 @@ Admin.prototype.getStatistics = function (next) {
   const getTotalRate = new Promise((resolve) => {
     Promise.all([getTotalAnsweredSondage, getTotalSentSondage])
       .then(((data) => {
-        const rate = data[0] / data[1];
+        const rate = parseFloat((data[0] / data[1]).toFixed(3));
         resolve(rate);
       }));
   });
 
   const getTotalSatis = new Promise((resolve) => {
     Reponse.sum('valeur').then((val) => {
-      Reponse.count().then(total => resolve(val / total));
+      Reponse.count().then(total => resolve(parseFloat((val / total).toFixed(3))));
     });
   });
 
@@ -332,7 +332,7 @@ Admin.prototype.getStatistics = function (next) {
         reps.forEach((rep) => {
           satisfaction += rep.dataValues.valeur;
         });
-        resolve(satisfaction / reps.length);
+        resolve(parseFloat((satisfaction / reps.length).toFixed(3)));
       } else {
         resolve(0);
       }
@@ -345,7 +345,7 @@ Admin.prototype.getStatistics = function (next) {
         console.log(data);
         let rate = Number;
         if (data[1] !== 0) {
-          rate = data[0] / data[1];
+          rate = parseFloat((data[0] / data[1]).toFixed(3));
         } else {
           rate = 0;
         }
