@@ -30,11 +30,11 @@ const fakeSurvey = {
           keyWord: 'q3',
         },
         {
-          text: 'th1 question3',
+          text: 'th1 question4',
           keyWord: 'q4',
         },
         {
-          text: 'th1 question3',
+          text: 'th1 question5',
           keyWord: 'q5',
         },
       ],
@@ -49,6 +49,31 @@ const fakeSurvey = {
         {
           text: 'th2 question2',
           keyWord: 'q2',
+        },
+        {
+          text: 'th2 question3',
+          keyWord: 'q3',
+        },
+        {
+          text: 'th2 question4',
+          keyWord: 'q4',
+        },
+      ],
+    },
+    {
+      name: 'thematique 3',
+      questionList: [
+        {
+          text: 'th3 question1',
+          keyWord: 'q1',
+        },
+        {
+          text: 'th3 question2',
+          keyWord: 'q2',
+        },
+        {
+          text: 'th3 question3',
+          keyWord: 'q3',
         },
       ],
     },

@@ -186,9 +186,9 @@ router.get("/generalStatistics", checkToken, (req, res) => {
   });
 });
 
-router.post("/specificStatistics", checkToken, (req, res) => {
+router.get("/specificStatistics/:year/:month/:day", checkToken, (req, res) => {
   Models.Admin.findById(req.user.id).then((admin) => {
-    admin.getStatisticsSpecific(req.body.date).then((sondageResult) => {
+    admin.getStatisticsSpecific(req.params).then((sondageResult) => {
       res.json(sondageResult);
     });
   });
@@ -200,6 +200,5 @@ router.use((err, req, res, next) => {
     res.status(401).json({ message: 'Unauthorized. Invalid token!' });
   }
 });
-
 
 module.exports = router;
