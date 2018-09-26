@@ -47,7 +47,7 @@ var userConstructor = function userConstructor(sequelize) {
           lastName: lastName,
           email: email,
           mailIntensity: 1,
-          lastMailDate: Date.now()
+          lastMailDate: Date.now() - 86400000
         }).then(function () {
           resolve();
         });

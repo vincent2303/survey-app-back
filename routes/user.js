@@ -65,11 +65,12 @@ router.post('/answerSondage',
   });
 
 router.post('/changeFreq', userCheckToken, (req, res) => {
+  console.log(typeof (req.body.newIntensity) === "number");
   if (typeof (req.body.newIntensity) === "number") {
     Models.User.update(
       { mailIntensity: req.body.newIntensity },
-      { where: req.body.user_id },
-    ).then(res.send({ msg: "Mail Intensity changed" }));
+      { where: { id: req.user.user_id } },
+    ).then(res.status(200).send({ msg: "Mail Intensity changed" }));
   }
 });
 

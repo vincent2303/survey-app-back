@@ -210,14 +210,14 @@ Admin.prototype.getStatistics = function (next) {
   });
   var getTotalRate = new Promise(function (resolve) {
     Promise.all([getTotalAnsweredSondage, getTotalSentSondage]).then(function (data) {
-      var rate = data[0] / data[1];
+      var rate = parseFloat((data[0] / data[1]).toFixed(3));
       resolve(rate);
     });
   });
   var getTotalSatis = new Promise(function (resolve) {
     Reponse.sum('valeur').then(function (val) {
       Reponse.count().then(function (total) {
-        return resolve(val / total);
+        return resolve(parseFloat((val / total).toFixed(3)));
       });
     });
   });
@@ -293,7 +293,7 @@ Admin.prototype.getStatistics = function (next) {
           reps.forEach(function (rep) {
             satisfaction += rep.dataValues.valeur;
           });
-          resolve(satisfaction / reps.length);
+          resolve(parseFloat((satisfaction / reps.length).toFixed(3)));
         } else {
           resolve(0);
         }
@@ -308,7 +308,7 @@ Admin.prototype.getStatistics = function (next) {
         var rate = Number;
 
         if (data[1] !== 0) {
-          rate = data[0] / data[1];
+          rate = parseFloat((data[0] / data[1]).toFixed(3));
         } else {
           rate = 0;
         }

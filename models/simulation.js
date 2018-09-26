@@ -11,36 +11,60 @@ const simulationTime = 35;
 const simulationDay = new Date();
 simulationDay.setDate(simulationDay.getDate() - simulationTime);
 
+const rand = function (max) {
+  return Math.floor(Math.random() * Math.floor(max));
+};
+
+const randRep = function (date) {
+  const diff = simulationTime - Math.round((Date.now() - date) / (1000 * 60 * 60 * 24));
+  const i = rand(44) + rand(diff);
+  if (i >= 0 && i <= 14) {
+    return (-1);
+  } if (i >= 15 && i <= 29) {
+    return (0);
+  } if (i >= 29) {
+    return (1);
+  } 
+};
+
 const fakeSurvey = {
-  name: 'simulation_survey',
+  name: 'Condition de travail',
   thematiqueList: [
     {
-      name: 'simulation_thematique 1',
+      name: 'Cafétaria',
       questionList: [
         {
-          text: 'th1 question1',
-          keyWord: 'q1',
+          text: 'Le repas était-il convenable?',
+          keyWord: 'Qualité',
         },
         {
-          text: 'th1 question2',
-          keyWord: 'q2',
+          text: "Comment était l'attente?",
+          keyWord: 'Attente',
         },
         {
-          text: 'th1 question3',
-          keyWord: 'q3',
+          text: 'Etait-ce trop bryuant?',
+          keyWord: 'Bruit',
         },
       ],
     },
     {
-      name: 'simulation_thematique 2',
+      name: 'Bureau',
       questionList: [
         {
-          text: 'th2 question1',
-          keyWord: 'q1',
+          text: "Avez vous été productif aujourd'hui?",
+          keyWord: 'Productivité',
         },
         {
-          text: 'th2 question2',
-          keyWord: 'q2',
+          text: 'Comment était la température?',
+          keyWord: 'Température',
+        },
+        {
+          text: 'Etait-ce trop bryuant?',
+          keyWord: 'Bruit',
+        },
+        {
+          text: 'Votre bureau était il sale?',
+          keyWord: 'Propreté',
         },
       ],
     },
@@ -53,11 +77,15 @@ const incrementDay = function () {
 
 const addManyUsers = function (userNumber) {
   return new Promise(function (resolve) {
-    const promiseArray = [];
-    for (let i = 0; i < userNumber; i++) {
-      promiseArray.push(User.addUser('simulation_user', 'simulation_user', 'simulation_user'));
+    if (userNumber > 0) {
+      const promiseArray = [];
+      for (let i = 0; i < userNumber; i++) {
+        promiseArray.push(User.addUser('Goulven suce des gros chibre', ' et il a une patite bite', 'goulven.molaret@supekec.fr'));
+      }
+      Promise.all(promiseArray).then(resolve);
+    } else {
+      resolve();
     }
-    Promise.all(promiseArray).then(resolve);
   });
 };
 
@@ -88,7 +116,7 @@ const answerSondage_simulation = function (user, date) {
     questionIdList.forEach((question_id) => {
       fake_answer.answered_questions.push({
         question_id: question_id,
-        answer: randInt(-1, 2),
+        answer: randRep(date),
       });
     });
     user.answerSondage(fake_answer, date).then(() => {
@@ -102,7 +130,9 @@ const answerUserListSondage_simulation = function (users, date) {
     const promiseArray = [];
     JourSondage.addJourSondage(fakeSurvey_id, simulationDay, users.length);
     users.forEach((user) => {
-      promiseArray.push(answerSondage_simulation(user, date));
+      if (rand(3) !== 0) {
+        promiseArray.push(answerSondage_simulation(user, date));
+      }
     });
     Promise.all(promiseArray).then(() => {
       resolve();
@@ -169,11 +199,11 @@ const Alldays = function (compteur) {
     compteur--;
     console.log(compteur);
     if (compteur <= 15) {
-      day(1).then(() => {
+      day(rand(2)).then(() => {
         Alldays(compteur);
       });
     } else {
-      day(2).then(() => {
+      day(rand(5)).then(() => {
         Alldays(compteur);
       });
     }
