@@ -29,6 +29,14 @@ const fakeSurvey = {
           text: 'th1 question3',
           keyWord: 'q3',
         },
+        {
+          text: 'th1 question3',
+          keyWord: 'q4',
+        },
+        {
+          text: 'th1 question3',
+          keyWord: 'q5',
+        },
       ],
     },
     {

@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const env = require('../const');
 const id_generator = require('../custom_module/id_generator');
+// const getCommentaire = require('./dataFetch').getCommentaire;
 
 const Op = Sequelize.Op;
 
@@ -191,21 +192,43 @@ Admin.prototype.getStatisticsSpecific = function (day) {
           }));
         }));
         Promise.all(promises).then(() => {
+          // thematiqueId --> { thematiqueName, questionMap }
+          // questionMap: questionId --> { keyWord, sum, numberAnswer } 
+          const sondageMap = new Map();
+          // thematiqueId -->  name 
           const thematiqueMap = new Map();
           thematiqueList.forEach((thematique) => {
-            thematiqueMap.set(thematique.id, { name: thematique.name, questionMap: new Map() });
+            thematiqueMap.set(thematique.id, thematique.name);
+            sondageMap.set(thematique.id, { thematiqueName: thematique.name, questionMap: new Map() });
           });
+          // question ID --> thematiqueId
+          const questionToThematique = new Map();
           questionList.forEach((question) => {
-            thematiqueMap.get(question.thematique_id).questionMap.set(question.id, { keyWord: question.keyWord, average: 0, numberAnswer: 0 });
+            questionToThematique.set(question.id, question.thematique_id);
+            sondageMap.get(question.thematique_id).questionMap.set(question.id, { keyWord: question.keyWord, sum: 0, numberAnswer: 0 });
           });
           reponseList.forEach((reponse) => {
-            thematiqueMap.get(reponse.thematique_id).questionMap.get(reponse.question_id).average += reponse.valeur;
-            thematiqueMap.get(reponse.thematique_id).questionMap.get(reponse.question_id).numberAnswer += reponse.valeur;
+            const thematiqueId = questionToThematique.get(reponse.question_id);
+            sondageMap.get(thematiqueId).questionMap.get(reponse.question_id).sum += reponse.valeur;
+            sondageMap.get(thematiqueId).questionMap.get(reponse.question_id).numberAnswer += 1;
           });
-          specificStat = {
-            name: sondage_name,
+          const sondageResult = {
             thematiqueList: [],
           };
+          sondageMap.forEach((thematiqueObject) => {
+            const thematique = {
+              name: thematiqueObject.thematiqueName,
+              questionList: [],
+            };
+            thematiqueObject.questionMap.forEach((questionObject) => {
+              thematique.questionList.push({
+                keyWord: questionObject.keyWord,
+                avg: questionObject.sum / (questionObject.numberAnswer || 1),
+              });
+            });
+            sondageResult.thematiqueList.push(thematique);
+          });
+          resolveAll(sondageResult);
         });
       });
     });
