@@ -193,6 +193,13 @@ router.get("/generalStatistics", checkToken, function (req, res) {
     });
   });
 });
+router.post("/specificStatistics", checkToken, function (req, res) {
+  Models.Admin.findById(req.user.id).then(function (admin) {
+    admin.getStatisticsSpecific(req.body.date).then(function (sondageResult) {
+      res.json(sondageResult);
+    });
+  });
+});
 router.use(function (err, req, res, next) {
   console.log("error: ", err.name);
 
