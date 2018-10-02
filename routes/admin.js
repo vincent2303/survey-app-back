@@ -1,4 +1,5 @@
 const express = require('express');
+const passport = require('passport');
 
 const router = express.Router();
 
@@ -11,16 +12,6 @@ router.use(express.urlencoded({ extended: false }));
 
 const morgan = require('morgan');
 
-// Authentification
-const passport = require('passport');
-const adminLoginStrategy = require('../passport-config/adminStrategy');
-
-passport.use(adminLoginStrategy);
-passport.initialize();
-
-// Authentification controllers
-const checkToken = require('../controllers/adminCheckToken');
-
 // Récupère les models
 const Models = require('../models/index');
 
@@ -29,8 +20,31 @@ const Data = require('../models/dataFetch');
 
 router.use(morgan('dev'));
 
+// Authentification
+const adminLoginStrategy = require('../passport-config/adminStrategy');
+
+passport.use(adminLoginStrategy);
+passport.serializeUser((user, done) => {
+  console.log('Inside serializeUser callback. User id is save to the session file store here');
+  done(null, user.id);
+});
+passport.deserializeUser(function (id, done) {
+  done(null, id);
+});
+
+// Authentification controllers
+const checkToken = require('../controllers/adminCheckToken');
+
+router.use((req, res, next) => {
+  if (!req.isAuthenticated() && req.url !== '/login') {
+    res.status(401).json({ message: 'Unauthorized. User not logged in!' });
+  } else {
+    next();
+  }
+});
+
 router.post('/login',
-  passport.authenticate('local', { session: false }),
+  passport.authenticate('local', { session: true }),
   (req, res) => {
     switch (req.user) {
       case "wrongUser":
@@ -41,10 +55,14 @@ router.post('/login',
         break;
       default:
         console.log("Correct authentification: ", req.user.dataValues.pseudo);
+        req.login(req.user, (err) => {
+          console.log('Inside req.login() callback');
+          console.log(`req.session.passport: ${JSON.stringify(req.session.passport)}`);
+          console.log(`req.user: ${JSON.stringify(req.user)}`);
+        });
         const serverResponse = { 
           success: true, 
           admin: { pseudo: req.user.dataValues.pseudo },
-          token: req.user.generateJwt(),
         };
         res.json(serverResponse);
     }
@@ -56,8 +74,15 @@ router.post('/login',
 // Les attributs de l'admin sont dans le body de la requète
 // TODO : Prendre en compte le cas où il y a une erreure au cours de la création de l'admin'
 
+// Logout the session
+
+router.get('/logout', (req, res) => {
+  req.session.destroy();
+  res.send("User logged out");
+});
+
 // Routes relatives a la gestion des admins et des users
-router.post('/createAdmin', checkToken, (req, res) => {
+router.post('/createAdmin', (req, res) => {
   console.log(`creating admin ${req.body.pseudo}`);
   // On vérifie que les données minmums pour créer un utilisateur sont bien présentes
   if (!req.body.pseudo || !req.body.mp) {
@@ -72,7 +97,6 @@ router.post('/createAdmin', checkToken, (req, res) => {
 });
 
 router.post('/csvPost',
-  checkToken,
   (req, res) => {
     req.body.userList.forEach((user) => {
       Models.User.addUser(user.firstName, user.lastName, user.email).then(() => { res.json("user list added"); });
@@ -80,7 +104,6 @@ router.post('/csvPost',
   });
 
 router.post('/singlePost',
-  checkToken,
   (req, res) => {
     Models.User.addUser(req.body.user.firstName, req.body.user.lastName, req.body.user.email).then(() => {
       res.status(200).send(req.body.email);
@@ -90,8 +113,8 @@ router.post('/singlePost',
 
 // Route relative à l'affichage et la creation de sondage
 
-router.get('/getSondage', checkToken, (req, res) => {
-  Models.Admin.findOne({ where: { id: req.user.id } }).then((admin) => {
+router.get('/getSondage', (req, res) => {
+  Models.Admin.findOne({ where: { id: req.user } }).then((admin) => {
     admin.getSondage().then((sondageList) => {
       console.log("Sent all sondages to client");
       res.status(200).json(sondageList);
@@ -117,8 +140,8 @@ router.get('/getSondage', checkToken, (req, res) => {
     ]
   }
 */
-router.post('/postSondage', checkToken, (req, res) => {
-  Models.Admin.findOne({ where: { id: req.user.id } }).then((admin) => {
+router.post('/postSondage', (req, res) => {
+  Models.Admin.findOne({ where: { id: req.user } }).then((admin) => {
     admin.createSondage(req.body).then(() => {
       console.log("New sondage created: ", req.body.name);
       res.status(200).send("New sondage created");
@@ -126,7 +149,7 @@ router.post('/postSondage', checkToken, (req, res) => {
   });
 });
 
-router.post('/changeNextSondage', checkToken, (req, res) => {
+router.post('/changeNextSondage', (req, res) => {
   if (!req.body) {
     console.log("/!\\ ERROR : Inccorect body");
     res.status(400).send("Bad Request : The body doesnt contain next_sondage ! ");
@@ -142,35 +165,35 @@ router.post('/changeNextSondage', checkToken, (req, res) => {
 
 // Route relative aux statisques
 
-router.get('/numberRemplissages', checkToken, (req, res) => {
+router.get('/numberRemplissages', (req, res) => {
   Data.getNumberRemplissages((count) => {
     console.log("Fetching total number of Remplissage");
     res.status(200).json(count);
   });
 });
 
-router.get('/numberRemplissagesJour/:jour', checkToken, (req, res) => {
+router.get('/numberRemplissagesJour/:jour', (req, res) => {
   Data.getNumberRemplissagesJour(req.params.jour, (count) => {
     console.log("Fetching total number of Remplissage on: ", req.params.jour);
     res.status(200).json(count);
   });
 });
 
-router.get('/getCommentaireJour/:jour', checkToken, (req, res) => {
+router.get('/getCommentaireJour/:jour', (req, res) => {
   Data.getCommentairesJour(req.params.jour, (comments) => {
     console.log("Fetching all Commentaires on: ", req.params.jour);
     res.status(200).json(comments);
   });
 });
 
-router.get('/numberReponses', checkToken, (req, res) => {
+router.get('/numberReponses', (req, res) => {
   Data.getNumberReponses((count) => {
     console.log("Fetching total number of Reponse");
     res.status(200).json(count);
   });
 });
 
-router.get('/numberReponsesJour/:jour', checkToken, (req, res) => {
+router.get('/numberReponsesJour/:jour', (req, res) => {
   Data.getNumberReponsesJour(req.params.jour, (count) => {
     res.status(200).json(count);
     console.log("Fetching total number of Reponse on: ", req.params.jour);
@@ -178,27 +201,20 @@ router.get('/numberReponsesJour/:jour', checkToken, (req, res) => {
   res.json("ok");
 });
 
-router.get("/generalStatistics", checkToken, (req, res) => {
-  Models.Admin.findById(req.user.id).then((admin) => {
+router.get("/generalStatistics", (req, res) => {
+  Models.Admin.findById(req.user).then((admin) => {
     admin.getStatistics((statisticTab) => {
       res.json(statisticTab);
     });
   });
 });
 
-router.get("/specificStatistics/:year/:month/:day", checkToken, (req, res) => {
-  Models.Admin.findById(req.user.id).then((admin) => {
+router.get("/specificStatistics/:year/:month/:day", (req, res) => {
+  Models.Admin.findById(req.user).then((admin) => {
     admin.getStatisticsSpecific(req.params).then((sondageResult) => {
       res.json(sondageResult);
     });
   });
-});
-
-router.use((err, req, res, next) => {
-  console.log("error: ", err.name);
-  if (err.name === 'UnauthorizedError') {
-    res.status(401).json({ message: 'Unauthorized. Invalid token!' });
-  }
 });
 
 module.exports = router;

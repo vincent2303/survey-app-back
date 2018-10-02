@@ -4,19 +4,21 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "",
-    "clean": "rm -r -f dist",
-    "build": "npm run clean && mkdir dist && babel ./../CampusHappiness-back -s -d dist",
-    "start": "npm run build && node bin/production",
-    "setup": "node ./models/setup"
+    "clean": "rm -r -f ./dist",
+    "build": "npm run clean && mkdir ./dist && babel ./../CampusHappiness-back -s -d ./dist && cp -R ./sessions ./dist",
+    "start": "npm run build && node ./dist/app ",
+    "setup": "node ./models/setup",
+    "dev": "nodemon app --ignore sessions/ app.js "
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.5.2",
+    "cookie-parser": "^1.4.3",
     "cors": "^2.8.4",
     "express": "^4.16.3",
     "express-jwt": "^5.3.1",
+    "express-session": "^1.15.6",
     "jsonwebtoken": "^8.3.0",
     "morgan": "^1.9.1",
     "mysql2": "^1.6.1",
@@ -26,6 +28,7 @@
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "sequelize": "^4.38.1",
+    "session-file-store": "^1.2.0",
     "uuid": "^3.3.2"
   },
   "devDependencies": {

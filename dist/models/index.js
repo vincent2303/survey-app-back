@@ -182,135 +182,139 @@ Admin.prototype.createSondage = function (sondage) {
   });
 };
 
-Admin.prototype.getStatisticsSpecific = function (day) {
+Admin.prototype.getStatisticsSpecific = function (date) {
+  var searchDate = new Date(parseInt(date.year, 10), parseInt(date.month, 10) - 1, parseInt(date.day, 10));
   return new Promise(function (resolveAll) {
-    var currentDate = new Date();
     JourSondage.findOne({
       where: {
-        date_emmission: currentDate
+        date_emmission: searchDate
       }
     }).then(function (jourSondage) {
-      var sondage_id = jourSondage.dataValues.sondage_id;
-      var questionList = [];
-      var thematiqueIdList = [];
-      var remplissageIdList = [];
-      var sondage_name = null;
-      var promises = [];
-      promises.push(new Promise(function (resolve) {
-        Question.findAll({
-          where: {
-            sondage_id: sondage_id
-          }
-        }).then(function (questionListFound) {
-          console.log(questionListFound.length);
-          questionListFound.forEach(function (question) {
-            questionList.push(question.dataValues);
-
-            if (!thematiqueIdList.includes(question.dataValues.thematique_id)) {
-              thematiqueIdList.push(question.dataValues.thematique_id);
-            }
-          });
-          resolve();
-        });
-      }));
-      promises.push(new Promise(function (resolve) {
-        Remplissage.findAll({
-          where: {
-            sondage_id: sondage_id
-          }
-        }).then(function (remplissageListFound) {
-          console.log(remplissageListFound.length);
-          remplissageListFound.forEach(function (remplissage) {
-            remplissageIdList.push(remplissage.dataValues.id);
-          });
-          resolve();
-        });
-      }));
-      promises.push(new Promise(function (resolve) {
-        Sondage.findOne({
-          where: {
-            id: sondage_id
-          }
-        }).then(function (sondage) {
-          sondage_name = sondage.dataValues.name;
-          resolve();
-        });
-      }));
-      Promise.all(promises).then(function () {
-        promises = [];
-        var thematiqueList = [];
-        var reponseList = [];
+      if (!jourSondage) {
+        resolveAll("no sondage this day...");
+      } else {
+        var sondage_id = jourSondage.dataValues.sondage_id;
+        var questionList = [];
+        var thematiqueIdList = [];
+        var remplissageIdList = [];
+        var sondage_name = null;
+        var promises = [];
         promises.push(new Promise(function (resolve) {
-          Thematique.findAll({
+          Question.findAll({
             where: {
-              id: _defineProperty({}, Op.or, thematiqueIdList)
+              sondage_id: sondage_id
             }
-          }).then(function (thematiqueListFound) {
-            thematiqueListFound.forEach(function (thematique) {
-              thematiqueList.push(thematique.dataValues);
+          }).then(function (questionListFound) {
+            questionListFound.forEach(function (question) {
+              questionList.push(question.dataValues);
+
+              if (!thematiqueIdList.includes(question.dataValues.thematique_id)) {
+                thematiqueIdList.push(question.dataValues.thematique_id);
+              }
             });
             resolve();
           });
         }));
         promises.push(new Promise(function (resolve) {
-          Reponse.findAll({
+          Remplissage.findAll({
             where: {
-              remplissage_id: _defineProperty({}, Op.or, remplissageIdList)
+              sondage_id: sondage_id,
+              date: searchDate
             }
-          }).then(function (reponses) {
-            reponses.forEach(function (reponse) {
-              reponseList.push(reponse.dataValues);
+          }).then(function (remplissageListFound) {
+            remplissageListFound.forEach(function (remplissage) {
+              remplissageIdList.push(remplissage.dataValues.id);
             });
+            resolve();
+          });
+        }));
+        promises.push(new Promise(function (resolve) {
+          Sondage.findOne({
+            where: {
+              id: sondage_id
+            }
+          }).then(function (sondage) {
+            sondage_name = sondage.dataValues.name;
             resolve();
           });
         }));
         Promise.all(promises).then(function () {
-          // thematiqueId --> { thematiqueName, questionMap }
-          // questionMap: questionId --> { keyWord, sum, numberAnswer } 
-          var sondageMap = new Map(); // thematiqueId -->  name 
-
-          var thematiqueMap = new Map();
-          thematiqueList.forEach(function (thematique) {
-            thematiqueMap.set(thematique.id, thematique.name);
-            sondageMap.set(thematique.id, {
-              thematiqueName: thematique.name,
-              questionMap: new Map()
+          promises = [];
+          var thematiqueList = [];
+          var reponseList = [];
+          promises.push(new Promise(function (resolve) {
+            Thematique.findAll({
+              where: {
+                id: _defineProperty({}, Op.or, thematiqueIdList)
+              }
+            }).then(function (thematiqueListFound) {
+              thematiqueListFound.forEach(function (thematique) {
+                thematiqueList.push(thematique.dataValues);
+              });
+              resolve();
             });
-          }); // question ID --> thematiqueId
-
-          var questionToThematique = new Map();
-          questionList.forEach(function (question) {
-            questionToThematique.set(question.id, question.thematique_id);
-            sondageMap.get(question.thematique_id).questionMap.set(question.id, {
-              keyWord: question.keyWord,
-              sum: 0,
-              numberAnswer: 0
+          }));
+          promises.push(new Promise(function (resolve) {
+            Reponse.findAll({
+              where: {
+                remplissage_id: _defineProperty({}, Op.or, remplissageIdList)
+              }
+            }).then(function (reponses) {
+              reponses.forEach(function (reponse) {
+                reponseList.push(reponse.dataValues);
+              });
+              resolve();
             });
-          });
-          reponseList.forEach(function (reponse) {
-            var thematiqueId = questionToThematique.get(reponse.question_id);
-            sondageMap.get(thematiqueId).questionMap.get(reponse.question_id).sum += reponse.valeur;
-            sondageMap.get(thematiqueId).questionMap.get(reponse.question_id).numberAnswer += 1;
-          });
-          var sondageResult = {
-            thematiqueList: []
-          };
-          sondageMap.forEach(function (thematiqueObject) {
-            var thematique = {
-              name: thematiqueObject.thematiqueName,
-              questionList: []
-            };
-            thematiqueObject.questionMap.forEach(function (questionObject) {
-              thematique.questionList.push({
-                keyWord: questionObject.keyWord,
-                avg: questionObject.sum / (questionObject.numberAnswer || 1)
+          }));
+          Promise.all(promises).then(function () {
+            // thematiqueId --> { thematiqueName, questionMap }
+            // questionMap: questionId --> { keyWord, sum, numberAnswer } 
+            var sondageMap = new Map(); // thematiqueId -->  name 
+
+            var thematiqueMap = new Map();
+            thematiqueList.forEach(function (thematique) {
+              thematiqueMap.set(thematique.id, thematique.name);
+              sondageMap.set(thematique.id, {
+                thematiqueName: thematique.name,
+                questionMap: new Map()
+              });
+            }); // question ID --> thematiqueId
+
+            var questionToThematique = new Map();
+            questionList.forEach(function (question) {
+              questionToThematique.set(question.id, question.thematique_id);
+              sondageMap.get(question.thematique_id).questionMap.set(question.id, {
+                keyWord: question.keyWord,
+                sum: 0,
+                numberAnswer: 0
               });
             });
-            sondageResult.thematiqueList.push(thematique);
+            reponseList.forEach(function (reponse) {
+              var thematiqueId = questionToThematique.get(reponse.question_id);
+              sondageMap.get(thematiqueId).questionMap.get(reponse.question_id).sum += reponse.valeur;
+              sondageMap.get(thematiqueId).questionMap.get(reponse.question_id).numberAnswer += 1;
+            });
+            var sondageResult = {
+              name: sondage_name,
+              thematiqueList: []
+            };
+            sondageMap.forEach(function (thematiqueObject) {
+              var thematique = {
+                name: thematiqueObject.thematiqueName,
+                questionList: []
+              };
+              thematiqueObject.questionMap.forEach(function (questionObject) {
+                thematique.questionList.push({
+                  keyWord: questionObject.keyWord,
+                  avg: questionObject.sum / (questionObject.numberAnswer || 1)
+                });
+              });
+              sondageResult.thematiqueList.push(thematique);
+            });
+            resolveAll(sondageResult);
           });
-          resolveAll(sondageResult);
         });
-      });
+      }
     });
   });
 };
