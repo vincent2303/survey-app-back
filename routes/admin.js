@@ -98,9 +98,11 @@ router.post('/createAdmin', (req, res) => {
 
 router.post('/csvPost',
   (req, res) => {
+    const promises = [];
     req.body.userList.forEach((user) => {
-      Models.User.addUser(user.firstName, user.lastName, user.email).then(() => { res.json("user list added"); });
+      promises.push(Models.User.addUser(user.firstName, user.lastName, user.email));
     });
+    Promise.all(promises).then(res.status(200).json("User list added"));
   });
 
 router.post('/singlePost',

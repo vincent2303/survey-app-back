@@ -79,7 +79,7 @@ router.post('/login', passport.authenticate('local', {
 // Logout the session
 
 router.get('/logout', function (req, res) {
-  console.log(req.cookies);
+  req.session.destroy();
   res.send("User logged out");
 }); // Routes relatives a la gestion des admins et des users
 
@@ -97,11 +97,11 @@ router.post('/createAdmin', function (req, res) {
   }
 });
 router.post('/csvPost', function (req, res) {
+  var promises = [];
   req.body.userList.forEach(function (user) {
-    Models.User.addUser(user.firstName, user.lastName, user.email).then(function () {
-      res.json("user list added");
-    });
+    promises.push(Models.User.addUser(user.firstName, user.lastName, user.email));
   });
+  Promise.all(promises).then(res.status(200).json("User list added"));
 });
 router.post('/singlePost', function (req, res) {
   Models.User.addUser(req.body.user.firstName, req.body.user.lastName, req.body.user.email).then(function () {
