@@ -1,7 +1,5 @@
 "use strict";
 
-console.log('lecture server');
-
 var express = require('express');
 
 var http = require('http');
@@ -25,6 +23,8 @@ var id_generator = require('./custom_module/id_generator');
 var adminRouter = require('./routes/admin');
 
 var usersRouter = require('./routes/user');
+
+var userPageRouter = require('./routes/userPage');
 
 var app = express();
 console.log('Starting scheduler');
@@ -56,6 +56,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use('/user', usersRouter);
+app.use('/userPage', userPageRouter);
 app.use('/admin', adminRouter);
 app.set('port', env.port);
 var server = http.createServer(app);

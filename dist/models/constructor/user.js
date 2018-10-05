@@ -2,6 +2,8 @@
 
 var Sequelize = require('sequelize');
 
+var crypto = require('crypto');
+
 var jwt = require('jsonwebtoken');
 
 var id_generator = require('../../custom_module/id_generator');
@@ -27,6 +29,15 @@ var userConstructor = function userConstructor(sequelize) {
       allowNull: false,
       type: Sequelize.STRING
     },
+    salt: {
+      type: Sequelize.STRING
+    },
+    hash: {
+      type: Sequelize.STRING
+    },
+    photo: {
+      type: Sequelize.STRING
+    },
     lastMailDate: {
       type: Sequelize.DATE
     },
@@ -37,15 +48,20 @@ var userConstructor = function userConstructor(sequelize) {
     timestamps: false
   }); // Class Methods
 
-  User.addUser = function (firstName, lastName, email) {
+  User.addUser = function (firstName, lastName, email, password) {
+    var photo = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : './public/user/photo/default.jpg';
     return new Promise(function (resolve) {
       var generatedID = id_generator();
+      var salt = crypto.randomBytes(16).toString('hex');
       User.sync().then(function () {
         User.create({
           id: generatedID,
           firstName: firstName,
           lastName: lastName,
           email: email,
+          salt: salt,
+          hash: crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex'),
+          photo: photo,
           mailIntensity: 1,
           lastMailDate: Date.now() - 86400000
         }).then(function () {
@@ -55,6 +71,11 @@ var userConstructor = function userConstructor(sequelize) {
     });
   }; // Instance methods
 
+
+  User.prototype.validPassword = function (password) {
+    var hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64, 'sha512').toString('hex');
+    return this.hash === hash;
+  };
 
   User.prototype.generateJwt = function (sondage_id) {
     var expiry = new Date();

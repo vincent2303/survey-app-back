@@ -56,7 +56,9 @@ var adminConstructor = function adminConstructor(sequelize) {
 
 
   Admin.prototype.validPassword = function (password) {
+    console.log(password);
     var hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64, 'sha512').toString('hex');
+    console.log(hash);
     return this.hash === hash;
   };
 

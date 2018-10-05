@@ -23,11 +23,12 @@ router.use(morgan('dev'));
 // Authentification
 const adminLoginStrategy = require('../passport-config/adminStrategy');
 
-passport.use(adminLoginStrategy);
+passport.use('local.admin', adminLoginStrategy);
+
 passport.serializeUser((user, done) => {
-  console.log('Inside serializeUser callback. User id is save to the session file store here');
   done(null, user.id);
 });
+
 passport.deserializeUser(function (id, done) {
   done(null, id);
 });
@@ -41,21 +42,18 @@ router.use((req, res, next) => {
 });
 
 router.post('/login',
-  passport.authenticate('local', { session: true }),
+  passport.authenticate('local.admin', { session: true }),
   (req, res) => {
     switch (req.user) {
       case "wrongUser":
         res.status(460).send("Wrong username");
         break;
       case "wrongPass":
-        res.status(461).send("Wrong username");
+        res.status(461).send("Wrong password");
         break;
       default:
-        console.log("Correct authentification: ", req.user.dataValues.pseudo);
         req.login(req.user, (err) => {
-          console.log('Inside req.login() callback');
           console.log(`req.session.passport: ${JSON.stringify(req.session.passport)}`);
-          console.log(`req.user: ${JSON.stringify(req.user)}`);
         });
         const serverResponse = { 
           success: true, 
@@ -77,14 +75,6 @@ router.get('/logout', (req, res) => {
   req.session.destroy();
   res.send("User logged out");
 });
-
-// Get the admin if he is authenticated
-router.get('/getUser', (req,res) => {
-  Models.Admin.findOne({ where: { id: req.user } }).then((admin) => {
-    res.json(admin.dataValues.pseudo);
-  });
-});
-
 
 // Routes relatives a la gestion des admins et des users
 router.post('/createAdmin', (req, res) => {
@@ -121,6 +111,7 @@ router.post('/singlePost',
 // Route relative à l'affichage et la creation de sondage
 
 router.get('/getSondage', (req, res) => {
+  console.log(req.user);
   Models.Admin.findOne({ where: { id: req.user } }).then((admin) => {
     admin.getSondage().then((sondageList) => {
       console.log("Sent all sondages to client");

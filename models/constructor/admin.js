@@ -49,7 +49,9 @@ const adminConstructor = function (sequelize) {
 
   // instance methods
   Admin.prototype.validPassword = function (password) {
+    console.log(password);
     const hash = crypto.pbkdf2Sync(password, this.salt, 1000, 64, 'sha512').toString('hex');
+    console.log(hash);
     return this.hash === hash;
   };
   Admin.prototype.generateJwt = function () {

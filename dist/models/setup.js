@@ -33,6 +33,9 @@ var creationTable = function creationTable() {
           firstName: "fake_first_name",
           lastName: "fake_last_name",
           email: "fake_user_email@fake_mail.bite",
+          salt: "fake_salt",
+          hash: "fake_hash",
+          photo: "./public/user/photo/default.jpg",
           lastMailDate: Date.now(),
           mailIntensity: 1
         });

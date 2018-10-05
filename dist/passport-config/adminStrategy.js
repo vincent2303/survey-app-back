@@ -7,6 +7,7 @@ var Admin = require("../models/index").Admin;
 var adminLoginStrategy = new LocalStrategy({
   usernameField: "pseudo"
 }, function (pseudo, password, done) {
+  console.log(password);
   Admin.findOne({
     where: {
       pseudo: pseudo

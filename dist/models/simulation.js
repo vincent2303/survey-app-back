@@ -2,8 +2,6 @@
 
 var Models = require("./index");
 
-var randInt = require('../custom_module/randInt');
-
 var id_generator = require('../custom_module/id_generator');
 
 var clearTables = require('./setup');
@@ -106,7 +104,7 @@ var addManyUsers = function addManyUsers(userNumber) {
       var promiseArray = [];
 
       for (var i = 0; i < userNumber; i++) {
-        promiseArray.push(User.addUser('Goulven suce des gros chibre', ' et il a une patite bite', 'goulven.molaret@supekec.fr'));
+        promiseArray.push(User.addUser('Goulven suce des gros chibre', ' et il a une petite bite', 'goulven.molaret@supekec.fr', 'mdp'));
       }
 
       Promise.all(promiseArray).then(resolve);

@@ -12,6 +12,7 @@ const id_generator = require('./custom_module/id_generator');
 
 const adminRouter = require('./routes/admin');
 const usersRouter = require('./routes/user');
+const userPageRouter = require('./routes/userPage');
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/user', usersRouter);
+app.use('/userPage', userPageRouter);
 app.use('/admin', adminRouter);
 
 app.set('port', env.port);

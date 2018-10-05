@@ -7,6 +7,7 @@ const adminLoginStrategy = new LocalStrategy(
     usernameField: "pseudo",
   },
   ((pseudo, password, done) => {
+    console.log(password);
     Admin.findOne({ where: { pseudo: pseudo } }).then((admin) => {
       if (!admin) {
         return done(null, "wrongUser", { message: 'Incorrect username.' });

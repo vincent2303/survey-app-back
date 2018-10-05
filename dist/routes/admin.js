@@ -25,9 +25,8 @@ router.use(morgan('dev')); // Authentification
 
 var adminLoginStrategy = require('../passport-config/adminStrategy');
 
-passport.use(adminLoginStrategy);
+passport.use('local.admin', adminLoginStrategy);
 passport.serializeUser(function (user, done) {
-  console.log('Inside serializeUser callback. User id is save to the session file store here');
   done(null, user.id);
 });
 passport.deserializeUser(function (id, done) {
@@ -42,7 +41,7 @@ router.use(function (req, res, next) {
     next();
   }
 });
-router.post('/login', passport.authenticate('local', {
+router.post('/login', passport.authenticate('local.admin', {
   session: true
 }), function (req, res) {
   switch (req.user) {
@@ -51,15 +50,12 @@ router.post('/login', passport.authenticate('local', {
       break;
 
     case "wrongPass":
-      res.status(461).send("Wrong username");
+      res.status(461).send("Wrong password");
       break;
 
     default:
-      console.log("Correct authentification: ", req.user.dataValues.pseudo);
       req.login(req.user, function (err) {
-        console.log('Inside req.login() callback');
         console.log("req.session.passport: ".concat(JSON.stringify(req.session.passport)));
-        console.log("req.user: ".concat(JSON.stringify(req.user)));
       });
       var serverResponse = {
         success: true,
@@ -78,16 +74,6 @@ router.post('/login', passport.authenticate('local', {
 router.get('/logout', function (req, res) {
   req.session.destroy();
   res.send("User logged out");
-}); // Get the admin if he is authenticated
-
-router.get('/getUser', function (req, res) {
-  Models.Admin.findOne({
-    where: {
-      id: req.user
-    }
-  }).then(function (admin) {
-    res.json(admin.dataValues.pseudo);
-  });
 }); // Routes relatives a la gestion des admins et des users
 
 router.post('/createAdmin', function (req, res) {
@@ -118,6 +104,7 @@ router.post('/singlePost', function (req, res) {
 }); // Route relative à l'affichage et la creation de sondage
 
 router.get('/getSondage', function (req, res) {
+  console.log(req.user);
   Models.Admin.findOne({
     where: {
       id: req.user

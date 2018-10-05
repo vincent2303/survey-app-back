@@ -7,7 +7,7 @@
     "clean": "rm -r -f ./dist",
     "build": "npm run clean && mkdir ./dist && babel ./../CampusHappiness-back -s -d ./dist && cp -R ./sessions ./dist",
     "start": "npm run build && node ./dist/app ",
-    "setup": "node ./models/setup",
+    "setup": "node ./models/simulation",
     "dev": "nodemon app --ignore sessions/ app.js "
   },
   "author": "",
