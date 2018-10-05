@@ -32,10 +32,7 @@ passport.serializeUser(function (user, done) {
 });
 passport.deserializeUser(function (id, done) {
   done(null, id);
-}); // Authentification controllers
-
-var checkToken = require('../controllers/adminCheckToken');
-
+});
 router.use(function (req, res, next) {
   if (!req.isAuthenticated() && req.url !== '/login') {
     res.status(401).json({
@@ -81,6 +78,16 @@ router.post('/login', passport.authenticate('local', {
 router.get('/logout', function (req, res) {
   req.session.destroy();
   res.send("User logged out");
+}); // Get the admin if he is authenticated
+
+router.get('/getUser', function (req, res) {
+  Models.Admin.findOne({
+    where: {
+      id: req.user
+    }
+  }).then(function (admin) {
+    res.json(admin.dataValues.pseudo);
+  });
 }); // Routes relatives a la gestion des admins et des users
 
 router.post('/createAdmin', function (req, res) {

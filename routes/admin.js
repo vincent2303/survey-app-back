@@ -32,9 +32,6 @@ passport.deserializeUser(function (id, done) {
   done(null, id);
 });
 
-// Authentification controllers
-const checkToken = require('../controllers/adminCheckToken');
-
 router.use((req, res, next) => {
   if (!req.isAuthenticated() && req.url !== '/login') {
     res.status(401).json({ message: 'Unauthorized. User not logged in!' });
@@ -80,6 +77,14 @@ router.get('/logout', (req, res) => {
   req.session.destroy();
   res.send("User logged out");
 });
+
+// Get the admin if he is authenticated
+router.get('/getUser', (req,res) => {
+  Models.Admin.findOne({ where: { id: req.user } }).then((admin) => {
+    res.json(admin.dataValues.pseudo);
+  });
+});
+
 
 // Routes relatives a la gestion des admins et des users
 router.post('/createAdmin', (req, res) => {
