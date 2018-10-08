@@ -29,11 +29,17 @@ var userConstructor = function userConstructor(sequelize) {
       allowNull: false,
       type: Sequelize.STRING
     },
+    pseudo: {
+      type: Sequelize.STRING
+    },
     salt: {
       type: Sequelize.STRING
     },
     hash: {
       type: Sequelize.STRING
+    },
+    auth: {
+      type: Sequelize.INTEGER
     },
     photo: {
       type: Sequelize.STRING
@@ -48,8 +54,8 @@ var userConstructor = function userConstructor(sequelize) {
     timestamps: false
   }); // Class Methods
 
-  User.addUser = function (firstName, lastName, email, password) {
-    var photo = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : './public/user/photo/default.jpg';
+  User.addUser = function (firstName, lastName, email, pseudo, password, auth) {
+    var photo = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : './public/user/photo/default.jpg';
     return new Promise(function (resolve) {
       var generatedID = id_generator();
       var salt = crypto.randomBytes(16).toString('hex');
@@ -59,6 +65,8 @@ var userConstructor = function userConstructor(sequelize) {
           firstName: firstName,
           lastName: lastName,
           email: email,
+          pseudo: pseudo,
+          auth: auth,
           salt: salt,
           hash: crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex'),
           photo: photo,

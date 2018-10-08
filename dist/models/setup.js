@@ -8,111 +8,100 @@ var Sondage = Models.Sondage,
     Reponse = Models.Reponse,
     Question = Models.Question,
     Remplissage = Models.Remplissage,
-    Admin = Models.Admin,
     JourSondage = Models.JourSondage,
     Commentaire = Models.Commentaire;
 
 var creationTable = function creationTable() {
   return new Promise(function (resolveAll) {
-    Admin.sync({
+    User.sync({
       force: true
     }).then(function () {
-      Admin.create({
-        id: "fake_admin_id",
+      User.create({
+        id: "fake_user_id",
+        firstName: "fake_first_name",
+        lastName: "fake_last_name",
+        email: "fake_user_email@fake_mail.bite",
         pseudo: "fake_pseudo",
         salt: "fake_salt",
         hash: "fake_hash",
-        createdAt: Date.now()
+        auth: 0,
+        photo: "./public/user/photo/default.jpg",
+        lastMailDate: Date.now(),
+        mailIntensity: 1
       });
     }).then(function () {
-      User.sync({
+      Sondage.sync({
         force: true
       }).then(function () {
-        User.create({
-          id: "fake_user_id",
-          firstName: "fake_first_name",
-          lastName: "fake_last_name",
-          email: "fake_user_email@fake_mail.bite",
-          salt: "fake_salt",
-          hash: "fake_hash",
-          photo: "./public/user/photo/default.jpg",
-          lastMailDate: Date.now(),
-          mailIntensity: 1
+        Sondage.create({
+          id: "fake_sondage_id",
+          author: "fake_author",
+          createdAt: Date.now(),
+          name: "fake_name",
+          current: true
         });
       }).then(function () {
-        Sondage.sync({
+        JourSondage.sync({
           force: true
         }).then(function () {
-          Sondage.create({
-            id: "fake_sondage_id",
-            author: "fake_author",
-            createdAt: Date.now(),
-            name: "fake_name",
-            current: true
+          JourSondage.create({
+            id: "fake_jour_sondage_id",
+            sondage_id: "fake_sondage_id",
+            date_emmission: Date.now(),
+            nombre_emission: 1
+          });
+        });
+        Thematique.sync({
+          force: true
+        }).then(function () {
+          Thematique.create({
+            id: "fake_thematique_id",
+            name: "fake_name"
           });
         }).then(function () {
-          JourSondage.sync({
+          Question.sync({
             force: true
           }).then(function () {
-            JourSondage.create({
-              id: "fake_jour_sondage_id",
+            Question.create({
+              id: "fake_question_id",
               sondage_id: "fake_sondage_id",
-              date_emmission: Date.now(),
-              nombre_emission: 1
-            });
-          });
-          Thematique.sync({
-            force: true
-          }).then(function () {
-            Thematique.create({
-              id: "fake_thematique_id",
-              name: "fake_name"
+              valeur: "fake_question",
+              thematique_id: "fake_thematique_id",
+              keyWord: "fake_keyWord"
             });
           }).then(function () {
-            Question.sync({
+            Remplissage.sync({
               force: true
             }).then(function () {
-              Question.create({
-                id: "fake_question_id",
+              Remplissage.create({
+                id: "fake_remplissage_id",
                 sondage_id: "fake_sondage_id",
-                valeur: "fake_question",
-                thematique_id: "fake_thematique_id",
-                keyWord: "fake_keyWord"
+                user_id: "fake_user_id",
+                date: Date.now()
               });
             }).then(function () {
-              Remplissage.sync({
+              Commentaire.sync({
                 force: true
               }).then(function () {
-                Remplissage.create({
-                  id: "fake_remplissage_id",
-                  sondage_id: "fake_sondage_id",
-                  user_id: "fake_user_id",
-                  date: Date.now()
+                Commentaire.create({
+                  id: "fake_commentaire_id",
+                  remplissage_id: "fake_remplissage_id",
+                  thematique_id: "fake_thematique_id",
+                  commentaire: "fake_commentaire"
                 });
               }).then(function () {
-                Commentaire.sync({
+                Reponse.sync({
                   force: true
                 }).then(function () {
-                  Commentaire.create({
-                    id: "fake_commentaire_id",
+                  Reponse.create({
+                    id: "fake_reponse_id",
                     remplissage_id: "fake_remplissage_id",
-                    thematique_id: "fake_thematique_id",
-                    commentaire: "fake_commentaire"
+                    question_id: "fake_question_id",
+                    valeur: 0
                   });
                 }).then(function () {
-                  Reponse.sync({
-                    force: true
-                  }).then(function () {
-                    Reponse.create({
-                      id: "fake_reponse_id",
-                      remplissage_id: "fake_remplissage_id",
-                      question_id: "fake_question_id",
-                      valeur: 0
-                    });
-                  }).then(function () {
-                    console.log("tables créées");
-                    resolveAll();
-                  });
+                  console.log("tables créées");
+                  resolveAll();
                 });
               });
             });
@@ -164,10 +153,8 @@ var suppressionTables = function suppressionTables() {
         });
         Promise.all([thematiqueDel, userDel]).then(function () {
           Sondage.drop().then(function () {
-            Admin.drop().then(function () {
-              console.log(" -- anciennes tables supprimées --");
-              resolveAll();
-            });
+            console.log(" -- anciennes tables supprimées --");
+            resolveAll();
           });
         });
       });
@@ -249,14 +236,6 @@ var delUser = function delUser() {
   });
 };
 
-var delAdmin = function delAdmin() {
-  return new Promise(function (resolve) {
-    Admin.findOne().then(function (elem) {
-      elem.destroy().then(resolve);
-    });
-  });
-};
-
 var clearTable = function clearTable() {
   return new Promise(function (resolve) {
     setupTables().then(function () {
@@ -267,8 +246,7 @@ var clearTable = function clearTable() {
         Promise.all(promises).then(function () {
           promises = [delThematique(), delSondage()];
           Promise.all(promises).then(function () {
-            promises = [delUser(), delAdmin()];
-            Promise.all(promises).then(function () {
+            delUser().then(function () {
               console.log("Tables nettoyées");
               resolve();
             });

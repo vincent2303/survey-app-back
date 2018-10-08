@@ -7,7 +7,6 @@ const Op = Sequelize.Op;
 
 // models constructors
 const userConstructor = require('./constructor/user');
-const adminConstructor = require('./constructor/admin');
 const jourSondageConstructor = require('./constructor/jourSondage');
 const questionConstructor = require('./constructor/question');
 const remplissageConstructor = require('./constructor/remplissage');
@@ -32,7 +31,6 @@ const sequelize = new Sequelize(env.database, env.username, env.password, {
 
 // Models
 const User = userConstructor(sequelize);
-const Admin = adminConstructor(sequelize);
 const JourSondage = jourSondageConstructor(sequelize);
 const Question = questionConstructor(sequelize);
 const Remplissage = remplissageConstructor(sequelize);
@@ -53,7 +51,7 @@ Commentaire.belongsTo(Thematique, { foreignKey: 'thematique_id', targetKey: 'id'
 Commentaire.belongsTo(Remplissage, { foreignKey: 'remplissage_id', targetKey: 'id' });
 
 // Should change this function by using promises more
-Admin.prototype.getSondage = function () {
+User.prototype.getSondage = function () {
   return new Promise((resolve) => {
     const sondageList = [];
     Sondage.findAll().then((sondages) => {
@@ -110,7 +108,7 @@ const addThematiqueId = function (thematiqueList, thematiqueListWithId) {
   return thematiqueList;
 };
 
-Admin.prototype.createSondage = function (sondage) {
+User.prototype.createSondage = function (sondage) {
   return new Promise((resolve) => {
     const sondage_id = id_generator();
     Sondage.addSondage(sondage_id, this.pseudo, Date.now(), sondage.name).then(() => {
@@ -134,7 +132,7 @@ Admin.prototype.createSondage = function (sondage) {
   });
 };
 
-Admin.prototype.getStatisticsSpecific = function (date) {
+User.prototype.getStatisticsSpecific = function (date) {
   const searchDate = new Date(parseInt(date.year, 10), parseInt(date.month, 10) - 1, parseInt(date.day, 10));
   return new Promise(function (resolveAll) {
     JourSondage.findOne({ where: { date_emmission: searchDate } }).then((jourSondage) => {
@@ -238,7 +236,7 @@ Admin.prototype.getStatisticsSpecific = function (date) {
   });
 };
 
-Admin.prototype.getStatistics = function (next) {
+User.prototype.getStatistics = function (next) {
   const statistics = {
     monthSentSondage: [], // fait
     monthAnsweredSondage: [], // fait
@@ -562,7 +560,6 @@ User.prototype.updateSondage = function (sondage) {
 
 const Models = {
   User: User,
-  Admin: Admin,
   Sondage: Sondage,
   JourSondage: JourSondage,
   Remplissage: Remplissage,

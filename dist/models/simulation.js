@@ -11,7 +11,6 @@ var Sondage = Models.Sondage,
     Reponse = Models.Reponse,
     Question = Models.Question,
     Remplissage = Models.Remplissage,
-    Admin = Models.Admin,
     JourSondage = Models.JourSondage;
 var simulationTime = 35;
 var simulationDay = new Date();
@@ -104,7 +103,7 @@ var addManyUsers = function addManyUsers(userNumber) {
       var promiseArray = [];
 
       for (var i = 0; i < userNumber; i++) {
-        promiseArray.push(User.addUser('Goulven suce des gros chibre', ' et il a une petite bite', 'goulven.molaret@supekec.fr', 'mdp'));
+        promiseArray.push(User.addUser('prenom', 'nom', 'goulven.molaret@supekec.fr', 'foutre', 'mdp', 0));
       }
 
       Promise.all(promiseArray).then(resolve);
@@ -187,14 +186,14 @@ var answerAll = function answerAll() {
 
 var firstDay = function firstDay() {
   return new Promise(function (resolve) {
-    Admin.addAdmin('Vince', 'Vince').then(function () {
+    User.addUser('marin', 'merlin', 'marin.merlin@me.com', 'mokoloco', 'mdp', 1).then(function () {
       addManyUsers(10).then(function () {
-        Admin.findOne({
+        User.findOne({
           where: {
-            pseudo: 'Vince'
+            pseudo: 'mokoloco'
           }
-        }).then(function (admin) {
-          admin.createSondage(fakeSurvey).then(function (sondage_id) {
+        }).then(function (user) {
+          user.createSondage(fakeSurvey).then(function (sondage_id) {
             Sondage.update({
               current: true
             }, {

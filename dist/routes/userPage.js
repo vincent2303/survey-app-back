@@ -20,9 +20,9 @@ router.use(morgan('dev')); // Récupère les models
 var Models = require('../models/index'); // Authentification
 
 
-var userLoginStrategy = require('../passport-config/userStrategy');
+var loginStrategy = require('../passport-config/adminStrategy');
 
-passport.use('local.user', userLoginStrategy);
+passport.use(loginStrategy);
 passport.serializeUser(function (user, done) {
   done(null, user);
 });
@@ -38,12 +38,12 @@ router.use(function (req, res, next) {
     next();
   }
 });
-router.post('/login', passport.authenticate('local.user', {
+router.post('/login', passport.authenticate('local', {
   session: true
 }), function (req, res) {
   switch (req.user) {
     case "wrongUser":
-      res.status(460).send("Wrong email");
+      res.status(460).send("Wrong username");
       break;
 
     case "wrongPass":
@@ -76,7 +76,7 @@ router.get('/logout', function (req, res) {
 router.get('/getUser', function (req, res) {
   Models.User.findOne({
     where: {
-      id: req.user
+      id: req.user.id
     }
   }).then(function (user) {
     res.json(user.dataValues.firstName);

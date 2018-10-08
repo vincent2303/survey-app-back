@@ -21,8 +21,6 @@ var Op = Sequelize.Op; // models constructors
 
 var userConstructor = require('./constructor/user');
 
-var adminConstructor = require('./constructor/admin');
-
 var jourSondageConstructor = require('./constructor/jourSondage');
 
 var questionConstructor = require('./constructor/question');
@@ -52,7 +50,6 @@ var sequelize = new Sequelize(env.database, env.username, env.password, {
 }); // Models
 
 var User = userConstructor(sequelize);
-var Admin = adminConstructor(sequelize);
 var JourSondage = jourSondageConstructor(sequelize);
 var Question = questionConstructor(sequelize);
 var Remplissage = remplissageConstructor(sequelize);
@@ -98,7 +95,7 @@ Commentaire.belongsTo(Remplissage, {
   targetKey: 'id'
 }); // Should change this function by using promises more
 
-Admin.prototype.getSondage = function () {
+User.prototype.getSondage = function () {
   return new Promise(function (resolve) {
     var sondageList = [];
     Sondage.findAll().then(function (sondages) {
@@ -156,7 +153,7 @@ var addThematiqueId = function addThematiqueId(thematiqueList, thematiqueListWit
   return thematiqueList;
 };
 
-Admin.prototype.createSondage = function (sondage) {
+User.prototype.createSondage = function (sondage) {
   var _this = this;
 
   return new Promise(function (resolve) {
@@ -182,7 +179,7 @@ Admin.prototype.createSondage = function (sondage) {
   });
 };
 
-Admin.prototype.getStatisticsSpecific = function (date) {
+User.prototype.getStatisticsSpecific = function (date) {
   var searchDate = new Date(parseInt(date.year, 10), parseInt(date.month, 10) - 1, parseInt(date.day, 10));
   return new Promise(function (resolveAll) {
     JourSondage.findOne({
@@ -319,7 +316,7 @@ Admin.prototype.getStatisticsSpecific = function (date) {
   });
 };
 
-Admin.prototype.getStatistics = function (next) {
+User.prototype.getStatistics = function (next) {
   var statistics = {
     monthSentSondage: [],
     // fait
@@ -680,7 +677,6 @@ User.prototype.updateSondage = function (sondage) {
 
 var Models = {
   User: User,
-  Admin: Admin,
   Sondage: Sondage,
   JourSondage: JourSondage,
   Remplissage: Remplissage,

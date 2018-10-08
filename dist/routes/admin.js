@@ -23,25 +23,31 @@ var Data = require('../models/dataFetch');
 
 router.use(morgan('dev')); // Authentification
 
-var adminLoginStrategy = require('../passport-config/adminStrategy');
+var loginStrategy = require('../passport-config/adminStrategy');
 
-passport.use('local.admin', adminLoginStrategy);
+passport.use(loginStrategy);
 passport.serializeUser(function (user, done) {
-  done(null, user.id);
+  done(null, user);
 });
 passport.deserializeUser(function (id, done) {
   done(null, id);
 });
 router.use(function (req, res, next) {
-  if (!req.isAuthenticated() && req.url !== '/login') {
+  if (req.url === '/login') {
+    next();
+  } else if (!req.isAuthenticated()) {
     res.status(401).json({
       message: 'Unauthorized. User not logged in!'
+    });
+  } else if (req.user.auth !== 1) {
+    res.status(401).json({
+      message: 'Unauthorized. You do not have high enough authorization'
     });
   } else {
     next();
   }
 });
-router.post('/login', passport.authenticate('local.admin', {
+router.post('/login', passport.authenticate('local', {
   session: true
 }), function (req, res) {
   switch (req.user) {
@@ -55,7 +61,7 @@ router.post('/login', passport.authenticate('local.admin', {
 
     default:
       req.login(req.user, function (err) {
-        console.log("req.session.passport: ".concat(JSON.stringify(req.session.passport)));
+        console.log("successfull login");
       });
       var serverResponse = {
         success: true,
@@ -76,19 +82,20 @@ router.get('/logout', function (req, res) {
   res.send("User logged out");
 }); // Routes relatives a la gestion des admins et des users
 
-router.post('/createAdmin', function (req, res) {
-  console.log("creating admin ".concat(req.body.pseudo)); // On vérifie que les données minmums pour créer un utilisateur sont bien présentes
-
+/* router.post('/createAdmin', (req, res) => {
+  console.log(`creating admin ${req.body.pseudo}`);
+  // On vérifie que les données minmums pour créer un utilisateur sont bien présentes
   if (!req.body.pseudo || !req.body.mp) {
     console.log("/!\\ ERROR : The body of the create admin request doesnt contain pseudo or mp !");
     res.status(400).send("Bad Request : The body of the create admin request doesnt contain pseudo or mp ! ");
   } else {
-    Models.Admin.addAdmin(req.body.pseudo, req.body.mp, Date.now()).then(function () {
-      console.log("Added admin: ".concat(req.body.pseudo));
-      res.status(200).send("Admin ".concat(req.body.pseudo, " created"));
+    Models.Admin.addAdmin(req.body.pseudo, req.body.mp, Date.now()).then(() => {
+      console.log(`Added admin: ${req.body.pseudo}`);
+      res.status(200).send(`Admin ${req.body.pseudo} created`);
     });
   }
-});
+}); */
+
 router.post('/csvPost', function (req, res) {
   var promises = [];
   req.body.userList.forEach(function (user) {
@@ -97,20 +104,19 @@ router.post('/csvPost', function (req, res) {
   Promise.all(promises).then(res.status(200).json("User list added"));
 });
 router.post('/singlePost', function (req, res) {
-  Models.User.addUser(req.body.user.firstName, req.body.user.lastName, req.body.user.email).then(function () {
-    res.status(200).send(req.body.email);
-    console.log("New user added: ", req.body.user);
+  Models.User.addUser(req.body.firstName, req.body.lastName, req.body.email, req.body.pseudo, req.body.password, req.body.auth).then(function () {
+    res.status(200).send("New user added");
+    console.log("New user added: ", req.body.pseudo);
   });
 }); // Route relative à l'affichage et la creation de sondage
 
 router.get('/getSondage', function (req, res) {
-  console.log(req.user);
-  Models.Admin.findOne({
+  Models.User.findOne({
     where: {
-      id: req.user
+      id: req.user.id
     }
-  }).then(function (admin) {
-    admin.getSondage().then(function (sondageList) {
+  }).then(function (user) {
+    user.getSondage().then(function (sondageList) {
       console.log("Sent all sondages to client");
       res.status(200).json(sondageList);
     });
@@ -136,12 +142,12 @@ router.get('/getSondage', function (req, res) {
 */
 
 router.post('/postSondage', function (req, res) {
-  Models.Admin.findOne({
+  Models.User.findOne({
     where: {
-      id: req.user
+      id: req.user.id
     }
-  }).then(function (admin) {
-    admin.createSondage(req.body).then(function () {
+  }).then(function (user) {
+    user.createSondage(req.body).then(function () {
       console.log("New sondage created: ", req.body.name);
       res.status(200).send("New sondage created");
     });
@@ -205,15 +211,15 @@ router.get('/numberReponsesJour/:jour', function (req, res) {
   res.json("ok");
 });
 router.get("/generalStatistics", function (req, res) {
-  Models.Admin.findById(req.user).then(function (admin) {
-    admin.getStatistics(function (statisticTab) {
+  Models.User.findById(req.user.id).then(function (user) {
+    user.getStatistics(function (statisticTab) {
       res.json(statisticTab);
     });
   });
 });
 router.get("/specificStatistics/:year/:month/:day", function (req, res) {
-  Models.Admin.findById(req.user).then(function (admin) {
-    admin.getStatisticsSpecific(req.params).then(function (sondageResult) {
+  Models.User.findById(req.user.id).then(function (user) {
+    user.getStatisticsSpecific(req.params).then(function (sondageResult) {
       res.json(sondageResult);
     });
   });

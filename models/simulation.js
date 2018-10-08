@@ -3,7 +3,7 @@ const id_generator = require('../custom_module/id_generator');
 const clearTables = require('./setup');
 
 const { 
-  Sondage, User, Reponse, Question, Remplissage, Admin, JourSondage,
+  Sondage, User, Reponse, Question, Remplissage, JourSondage,
 } = Models;
 
 const simulationTime = 35;
@@ -112,7 +112,7 @@ const addManyUsers = function (userNumber) {
     if (userNumber > 0) {
       const promiseArray = [];
       for (let i = 0; i < userNumber; i++) {
-        promiseArray.push(User.addUser('Goulven suce des gros chibre', ' et il a une petite bite', 'goulven.molaret@supekec.fr', 'mdp'));
+        promiseArray.push(User.addUser('prenom', 'nom', 'goulven.molaret@supekec.fr', 'foutre', 'mdp', 0));
       }
       Promise.all(promiseArray).then(resolve);
     } else {
@@ -186,10 +186,10 @@ const answerAll = function () {
 
 const firstDay = function () {
   return new Promise(function (resolve) {
-    Admin.addAdmin('Vince', 'Vince').then(() => {
+    User.addUser('marin', 'merlin', 'marin.merlin@me.com', 'mokoloco', 'mdp', 1).then(() => {
       addManyUsers(10).then(() => {
-        Admin.findOne({ where: { pseudo: 'Vince' } }).then((admin) => {
-          admin.createSondage(fakeSurvey).then((sondage_id) => {
+        User.findOne({ where: { pseudo: 'mokoloco' } }).then((user) => {
+          user.createSondage(fakeSurvey).then((sondage_id) => {
             Sondage.update({ current: true }, { where: { id: sondage_id } });
             getQuestionIdList(sondage_id).then(() => {
               answerAll().then(() => { 
