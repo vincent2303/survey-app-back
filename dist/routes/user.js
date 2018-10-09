@@ -13,88 +13,34 @@ router.use(express.urlencoded({
 
 var morgan = require('morgan');
 
-router.use(morgan('dev'));
+router.use(morgan('dev')); // Récupère les models
 
-var Models = require('../models/index');
+var Models = require('../models');
 
-var userCheckToken = require('../controllers/userCheckToken'); // front send un get avec header
+router.use(function (req, res, next) {
+  if (!req.isAuthenticated() && req.url !== '/login') {
+    res.status(401).json({
+      message: 'Unauthorized. User not logged in!'
+    });
+  } else {
+    next();
+  }
+}); // --------- Routes protegées-------------
+// Logout the session
 
+router.get('/logout', function (req, res) {
+  req.session.destroy();
+  res.send("User logged out");
+}); // Get user
 
-router.get('/getSondage', userCheckToken, function (req, res) {
+router.get('/getUser', function (req, res) {
   Models.User.findOne({
     where: {
-      id: req.user.user_id
+      id: req.user.id
     }
   }).then(function (user) {
-    user.findSondage(req).then(function (serverResponse) {
-      console.log("Sending current sondage to front");
-      res.status(200).json(serverResponse);
-    });
+    res.json(user.dataValues);
   });
-}); // front send un post avec header et dans le body un answered_questions (cf index.js)
-
-router.post('/answerSondage', userCheckToken, function (req, res) {
-  var _req$user = req.user,
-      user_id = _req$user.user_id,
-      sondage_id = _req$user.sondage_id,
-      remplissage_id = _req$user.remplissage_id;
-  Models.Remplissage.findById(remplissage_id).then(function (remplissage) {
-    if (remplissage) {
-      Models.User.findById(user_id).then(function (user) {
-        var sondage = {
-          sondage_id: sondage_id,
-          remplissage_id: remplissage_id,
-          answered_questions: req.body.answered_questions,
-          answered_commentaires: req.body.answered_commentaires
-        };
-        user.updateSondage(sondage).then(function () {
-          console.log(req.user.firstName, " already answered and changed his answers");
-          res.status(200).send({
-            msg: "Merci d'avoir modifier votre reponse !"
-          });
-        });
-      });
-    } else {
-      Models.User.findById(user_id).then(function (user) {
-        var sondage = {
-          sondage_id: sondage_id,
-          remplissage_id: remplissage_id,
-          answered_questions: req.body.answered_questions,
-          answered_commentaires: req.body.answered_commentaires
-        };
-        user.answerSondage(sondage).then(function () {
-          console.log("New remplissage submitted by: ", req.user.firstName);
-          res.status(200).send({
-            msg: "Merci d'avoir repondu au sondage !"
-          });
-        });
-      });
-    }
-  });
-});
-router.post('/changeFreq', userCheckToken, function (req, res) {
-  console.log(typeof req.body.newIntensity === "number");
-
-  if (typeof req.body.newIntensity === "number") {
-    Models.User.update({
-      mailIntensity: req.body.newIntensity
-    }, {
-      where: {
-        id: req.user.user_id
-      }
-    }).then(res.status(200).send({
-      msg: "Mail Intensity changed"
-    }));
-  }
-});
-router.use(function (err, req, res, next) {
-  console.log("error: ", err.name);
-
-  if (err.name === 'UnauthorizedError') {
-    res.status(401).json({
-      message: 'Unauthorized. Invalid token!'
-    });
-  }
 });
 module.exports = router;
 //# sourceMappingURL=user.js.map

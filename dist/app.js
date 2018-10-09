@@ -22,9 +22,9 @@ var id_generator = require('./custom_module/id_generator');
 
 var adminRouter = require('./routes/admin');
 
-var usersRouter = require('./routes/user');
+var surveyRouter = require('./routes/survey');
 
-var userPageRouter = require('./routes/userPage');
+var userRouter = require('./routes/user');
 
 var loginRouter = require('./routes/login');
 
@@ -58,9 +58,9 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-app.use('/user', usersRouter);
+app.use('/survey', surveyRouter);
 app.use('/login', loginRouter);
-app.use('/userPage', userPageRouter);
+app.use('/user', userRouter);
 app.use('/admin', adminRouter);
 app.set('port', env.port);
 var server = http.createServer(app);
