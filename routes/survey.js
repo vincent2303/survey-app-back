@@ -74,6 +74,14 @@ router.post('/changeFreq', userCheckToken, (req, res) => {
   }
 });
 
+router.get('/getMailIntensity',
+  userCheckToken,
+  (req, res) => {
+    Models.User.findOne({ where: { id: req.user.user_id } }).then((user) => {
+      res.status(200).json({ mailIntensity: user.dataValues.mailIntensity });
+    });
+  });
+
 router.use((err, req, res, next) => {
   console.log("error: ", err.name);
   if (err.name === 'UnauthorizedError') {

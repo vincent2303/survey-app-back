@@ -589,7 +589,13 @@ User.prototype.updateSondage = function (sondage) {
         }, 
       })
         .then((comment) => {
-          Commentaire.updateCommentaire(comment.dataValues.id, commentaire.answer);
+          if (comment) {
+            Commentaire.updateCommentaire(comment.dataValues.id, commentaire.answer);
+          } else {
+            Commentaire.addCommentaire(
+              remplissage_id, commentaire.thematique_id, commentaire.answer,
+            );
+          }
         });
     });
     resolve();
