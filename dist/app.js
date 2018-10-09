@@ -26,6 +26,8 @@ var usersRouter = require('./routes/user');
 
 var userPageRouter = require('./routes/userPage');
 
+var loginRouter = require('./routes/login');
+
 var app = express();
 console.log('Starting scheduler');
 scheduler();
@@ -33,6 +35,7 @@ var corsOptions = {
   origin: 'http://localhost:3000',
   credentials: true
 };
+app.use(express.static('public'));
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({
@@ -56,6 +59,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use('/user', usersRouter);
+app.use('/login', loginRouter);
 app.use('/userPage', userPageRouter);
 app.use('/admin', adminRouter);
 app.set('port', env.port);

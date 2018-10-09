@@ -132,6 +132,44 @@ User.prototype.createSondage = function (sondage) {
   });
 };
 
+User.prototype.getCommentairesJour = function (jour) {
+  return new Promise((resolve) => {
+    Commentaire.findAll({
+      include: [{
+        model: Remplissage,
+        where: { date: jour },
+      },
+      {
+        model: Thematique,
+      },
+      ],
+    }).then((commentaires) => {
+      const promiseList = [];
+      commentaires.forEach((commentaire) => {
+        const promise = new Promise((resolveCom) => {
+          commentaire.dataValues.user = {
+            firstName: "",
+            lastName: "",
+            email: "",
+          };
+          User.findOne({ where: { id: commentaire.dataValues.remplissage.dataValues.user_id } })
+            .then((user) => {
+              commentaire.dataValues.user.firstName = user.dataValues.firstName;
+              commentaire.dataValues.user.lastName = user.dataValues.lastName;
+              commentaire.dataValues.user.email = user.dataValues.email;
+              resolveCom();
+            });
+        });
+        promiseList.push(promise);
+      });
+      Promise.all(promiseList).then(() => {
+        console.log("Commentaire for ", jour, " found.");
+        resolve(commentaires);
+      });
+    });
+  });
+};
+
 User.prototype.getStatisticsSpecific = function (date) {
   const searchDate = new Date(parseInt(date.year, 10), parseInt(date.month, 10) - 1, parseInt(date.day, 10));
   return new Promise(function (resolveAll) {

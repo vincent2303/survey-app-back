@@ -179,6 +179,47 @@ User.prototype.createSondage = function (sondage) {
   });
 };
 
+User.prototype.getCommentairesJour = function (jour) {
+  return new Promise(function (resolve) {
+    Commentaire.findAll({
+      include: [{
+        model: Remplissage,
+        where: {
+          date: jour
+        }
+      }, {
+        model: Thematique
+      }]
+    }).then(function (commentaires) {
+      var promiseList = [];
+      commentaires.forEach(function (commentaire) {
+        var promise = new Promise(function (resolveCom) {
+          commentaire.dataValues.user = {
+            firstName: "",
+            lastName: "",
+            email: ""
+          };
+          User.findOne({
+            where: {
+              id: commentaire.dataValues.remplissage.dataValues.user_id
+            }
+          }).then(function (user) {
+            commentaire.dataValues.user.firstName = user.dataValues.firstName;
+            commentaire.dataValues.user.lastName = user.dataValues.lastName;
+            commentaire.dataValues.user.email = user.dataValues.email;
+            resolveCom();
+          });
+        });
+        promiseList.push(promise);
+      });
+      Promise.all(promiseList).then(function () {
+        console.log("Commentaire for ", jour, " found.");
+        resolve(commentaires);
+      });
+    });
+  });
+};
+
 User.prototype.getStatisticsSpecific = function (date) {
   var searchDate = new Date(parseInt(date.year, 10), parseInt(date.month, 10) - 1, parseInt(date.day, 10));
   return new Promise(function (resolveAll) {

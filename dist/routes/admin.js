@@ -2,8 +2,6 @@
 
 var express = require('express');
 
-var passport = require('passport');
-
 var router = express.Router(); // Le body Parser permet d'acceder aux variable envoyés dans le body
 
 var bodyParser = require('body-parser');
@@ -16,22 +14,9 @@ router.use(express.urlencoded({
 var morgan = require('morgan'); // Récupère les models
 
 
-var Models = require('../models/index'); // Récupère les fonctions de recherche de données
+var Models = require('../models/index');
 
-
-var Data = require('../models/dataFetch');
-
-router.use(morgan('dev')); // Authentification
-
-var loginStrategy = require('../passport-config/adminStrategy');
-
-passport.use(loginStrategy);
-passport.serializeUser(function (user, done) {
-  done(null, user);
-});
-passport.deserializeUser(function (id, done) {
-  done(null, id);
-});
+router.use(morgan('dev'));
 router.use(function (req, res, next) {
   if (req.url === '/login') {
     next();
@@ -45,31 +30,6 @@ router.use(function (req, res, next) {
     });
   } else {
     next();
-  }
-});
-router.post('/login', passport.authenticate('local', {
-  session: true
-}), function (req, res) {
-  switch (req.user) {
-    case "wrongUser":
-      res.status(460).send("Wrong username");
-      break;
-
-    case "wrongPass":
-      res.status(461).send("Wrong password");
-      break;
-
-    default:
-      req.login(req.user, function (err) {
-        console.log("successfull login");
-      });
-      var serverResponse = {
-        success: true,
-        admin: {
-          pseudo: req.user.dataValues.pseudo
-        }
-      };
-      res.json(serverResponse);
   }
 }); // --------- Routes protegées par token -------------
 // Un administrateur peut ajouter un autre administrateur :
@@ -179,36 +139,13 @@ router.post('/changeNextSondage', function (req, res) {
   }
 }); // Route relative aux statisques
 
-router.get('/numberRemplissages', function (req, res) {
-  Data.getNumberRemplissages(function (count) {
-    console.log("Fetching total number of Remplissage");
-    res.status(200).json(count);
-  });
-});
-router.get('/numberRemplissagesJour/:jour', function (req, res) {
-  Data.getNumberRemplissagesJour(req.params.jour, function (count) {
-    console.log("Fetching total number of Remplissage on: ", req.params.jour);
-    res.status(200).json(count);
-  });
-});
 router.get('/getCommentaireJour/:jour', function (req, res) {
-  Data.getCommentairesJour(req.params.jour, function (comments) {
-    console.log("Fetching all Commentaires on: ", req.params.jour);
-    res.status(200).json(comments);
+  Models.User.findById(req.user.id).then(function (user) {
+    user.getCommentairesJour(req.params.jour).then(function (comments) {
+      console.log("Fetching all Commentaires on: ", req.params.jour);
+      res.status(200).json(comments);
+    });
   });
-});
-router.get('/numberReponses', function (req, res) {
-  Data.getNumberReponses(function (count) {
-    console.log("Fetching total number of Reponse");
-    res.status(200).json(count);
-  });
-});
-router.get('/numberReponsesJour/:jour', function (req, res) {
-  Data.getNumberReponsesJour(req.params.jour, function (count) {
-    res.status(200).json(count);
-    console.log("Fetching total number of Reponse on: ", req.params.jour);
-  });
-  res.json("ok");
 });
 router.get("/generalStatistics", function (req, res) {
   Models.User.findById(req.user.id).then(function (user) {

@@ -1,5 +1,4 @@
 const express = require('express');
-const passport = require('passport');
 
 const router = express.Router();
 
@@ -15,23 +14,7 @@ const morgan = require('morgan');
 // Récupère les models
 const Models = require('../models/index');
 
-// Récupère les fonctions de recherche de données
-const Data = require('../models/dataFetch');
-
 router.use(morgan('dev'));
-
-// Authentification
-const loginStrategy = require('../passport-config/adminStrategy');
-
-passport.use(loginStrategy);
-
-passport.serializeUser((user, done) => {
-  done(null, user);
-});
-
-passport.deserializeUser(function (id, done) {
-  done(null, id);
-});
 
 router.use((req, res, next) => {
   if (req.url === '/login') {
@@ -44,28 +27,6 @@ router.use((req, res, next) => {
     next();
   }
 });
-
-router.post('/login',
-  passport.authenticate('local', { session: true }),
-  (req, res) => {
-    switch (req.user) {
-      case "wrongUser":
-        res.status(460).send("Wrong username");
-        break;
-      case "wrongPass":
-        res.status(461).send("Wrong password");
-        break;
-      default:
-        req.login(req.user, (err) => {
-          console.log("successfull login");
-        });
-        const serverResponse = { 
-          success: true, 
-          admin: { pseudo: req.user.dataValues.pseudo },
-        };
-        res.json(serverResponse);
-    }
-  });
 
 // --------- Routes protegées par token -------------
 
@@ -173,40 +134,13 @@ router.post('/changeNextSondage', (req, res) => {
 
 // Route relative aux statisques
 
-router.get('/numberRemplissages', (req, res) => {
-  Data.getNumberRemplissages((count) => {
-    console.log("Fetching total number of Remplissage");
-    res.status(200).json(count);
-  });
-});
-
-router.get('/numberRemplissagesJour/:jour', (req, res) => {
-  Data.getNumberRemplissagesJour(req.params.jour, (count) => {
-    console.log("Fetching total number of Remplissage on: ", req.params.jour);
-    res.status(200).json(count);
-  });
-});
-
 router.get('/getCommentaireJour/:jour', (req, res) => {
-  Data.getCommentairesJour(req.params.jour, (comments) => {
-    console.log("Fetching all Commentaires on: ", req.params.jour);
-    res.status(200).json(comments);
+  Models.User.findById(req.user.id).then((user) => {
+    user.getCommentairesJour(req.params.jour).then((comments) => {
+      console.log("Fetching all Commentaires on: ", req.params.jour);
+      res.status(200).json(comments);
+    });
   });
-});
-
-router.get('/numberReponses', (req, res) => {
-  Data.getNumberReponses((count) => {
-    console.log("Fetching total number of Reponse");
-    res.status(200).json(count);
-  });
-});
-
-router.get('/numberReponsesJour/:jour', (req, res) => {
-  Data.getNumberReponsesJour(req.params.jour, (count) => {
-    res.status(200).json(count);
-    console.log("Fetching total number of Reponse on: ", req.params.jour);
-  });
-  res.json("ok");
 });
 
 router.get("/generalStatistics", (req, res) => {

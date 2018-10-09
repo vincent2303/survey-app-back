@@ -11,8 +11,9 @@ const scheduler = require('./mail/timer.js');
 const id_generator = require('./custom_module/id_generator');
 
 const adminRouter = require('./routes/admin');
-const usersRouter = require('./routes/user');
-const userPageRouter = require('./routes/userPage');
+const surveyRouter = require('./routes/survey');
+const userRouter = require('./routes/user');
+const loginRouter = require('./routes/login');
 
 const app = express();
 
@@ -23,6 +24,8 @@ const corsOptions = {
   origin: 'http://localhost:3000',
   credentials: true,
 };
+
+app.use(express.static('public'));
 
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -43,8 +46,9 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/user', usersRouter);
-app.use('/userPage', userPageRouter);
+app.use('/survey', surveyRouter);
+app.use('/login', loginRouter);
+app.use('/user', userRouter);
 app.use('/admin', adminRouter);
 
 app.set('port', env.port);
