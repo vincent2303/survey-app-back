@@ -17,20 +17,13 @@ const Models = require('../models');
 
 router.use((req, res, next) => {
   if (!req.isAuthenticated() && req.url !== '/login') {
-    res.status(401).json({ message: 'Unauthorized. User not logged in!' });
+    res.status(401).json({ message: 'Not logged in' });
   } else {
     next();
   }
 });
 
 // --------- Routes protegées-------------
-
-// Logout the session
-
-router.get('/logout', (req, res) => {
-  req.session.destroy();
-  res.send("User logged out");
-});
 
 // Get user
 

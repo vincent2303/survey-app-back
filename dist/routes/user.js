@@ -20,18 +20,13 @@ var Models = require('../models');
 router.use(function (req, res, next) {
   if (!req.isAuthenticated() && req.url !== '/login') {
     res.status(401).json({
-      message: 'Unauthorized. User not logged in!'
+      message: 'Not logged in'
     });
   } else {
     next();
   }
 }); // --------- Routes protegées-------------
-// Logout the session
-
-router.get('/logout', function (req, res) {
-  req.session.destroy();
-  res.send("User logged out");
-}); // Get user
+// Get user
 
 router.get('/getUser', function (req, res) {
   Models.User.findOne({

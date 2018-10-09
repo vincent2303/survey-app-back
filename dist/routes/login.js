@@ -31,11 +31,15 @@ router.post('/', passport.authenticate('local', {
 }), function (req, res) {
   switch (req.user) {
     case "wrongUser":
-      res.status(460).send("Wrong username");
+      res.status(401).json({
+        message: "Wrong username"
+      });
       break;
 
     case "wrongPass":
-      res.status(461).send("Wrong password");
+      res.status(401).json({
+        message: "Wrong password"
+      });
       break;
 
     default:
@@ -50,6 +54,11 @@ router.post('/', passport.authenticate('local', {
       };
       res.json(serverResponse);
   }
+}); // Logout the session
+
+router.get('/logout', function (req, res) {
+  req.session.destroy();
+  res.send("User logged out");
 });
 module.exports = router;
 //# sourceMappingURL=login.js.map

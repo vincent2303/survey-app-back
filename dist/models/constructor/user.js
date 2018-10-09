@@ -55,7 +55,7 @@ var userConstructor = function userConstructor(sequelize) {
   }); // Class Methods
 
   User.addUser = function (firstName, lastName, email, pseudo, password, auth) {
-    var photo = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : './public/user/photo/default.jpg';
+    var photo = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : '/user/photo/default.jpg';
     return new Promise(function (resolve) {
       var generatedID = id_generator();
       var salt = crypto.randomBytes(16).toString('hex');

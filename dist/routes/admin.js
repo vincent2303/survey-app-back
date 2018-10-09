@@ -22,11 +22,11 @@ router.use(function (req, res, next) {
     next();
   } else if (!req.isAuthenticated()) {
     res.status(401).json({
-      message: 'Unauthorized. User not logged in!'
+      message: 'Not logged in'
     });
   } else if (req.user.auth !== 1) {
     res.status(401).json({
-      message: 'Unauthorized. You do not have high enough authorization'
+      message: 'Not authorized'
     });
   } else {
     next();

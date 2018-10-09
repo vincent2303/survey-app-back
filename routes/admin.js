@@ -20,9 +20,9 @@ router.use((req, res, next) => {
   if (req.url === '/login') {
     next();
   } else if (!req.isAuthenticated()) {
-    res.status(401).json({ message: 'Unauthorized. User not logged in!' });
+    res.status(401).json({ message: 'Not logged in' });
   } else if (req.user.auth !== 1) {
-    res.status(401).json({ message: 'Unauthorized. You do not have high enough authorization' });
+    res.status(401).json({ message: 'Not authorized' });
   } else {
     next();
   }

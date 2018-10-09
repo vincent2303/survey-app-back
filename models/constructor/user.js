@@ -49,7 +49,7 @@ const userConstructor = function (sequelize) {
   });
 
   // Class Methods
-  User.addUser = function (firstName, lastName, email, pseudo, password, auth, photo = './public/user/photo/default.jpg') {
+  User.addUser = function (firstName, lastName, email, pseudo, password, auth, photo = '/user/photo/default.jpg') {
     return new Promise(function (resolve) {
       const generatedID = id_generator();
       const salt = crypto.randomBytes(16).toString('hex');
