@@ -26,15 +26,31 @@ router.use(function (req, res, next) {
     next();
   }
 }); // --------- Routes protegées-------------
-// Get user
 
-router.get('/getUser', function (req, res) {
-  Models.User.findOne({
+router.post('/updateUser', function (req, res) {
+  var newCookie = Object.assign(req.user, req.body.updatedUser);
+  req.login(newCookie, function (err) {
+    console.log("successfull login: ", newCookie);
+  });
+  Models.User.updateUser(req.user.id, req.body.updatedUser).then(function () {
+    res.status(200).json(req.body.updatedUser);
+  });
+});
+router.get('getToken', function (req, res) {
+  Models.Sondage.findOne({
     where: {
-      id: req.user.id
+      current: true
     }
-  }).then(function (user) {
-    res.json(user.dataValues);
+  }).then(function (sondage) {
+    Models.User.findOne({
+      where: {
+        id: req.user.id
+      }
+    }).then(function (user) {
+      var sondage_id = sondage.dataValues.id;
+      var token = user.generateJwt(sondage_id);
+      console.log(token);
+    });
   });
 });
 module.exports = router;

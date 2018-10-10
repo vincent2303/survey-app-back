@@ -25,11 +25,13 @@ router.use((req, res, next) => {
 
 // --------- Routes protegées-------------
 
-// Get user
-
-router.get('/getUser', (req, res) => {
-  Models.User.findOne({ where: { id: req.user.id } }).then((user) => {
-    res.json(user.dataValues);
+router.post('/updateUser', (req, res) => {
+  const newCookie = Object.assign(req.user, req.body.updatedUser);
+  req.login(newCookie, (err) => {
+    console.log("successfull login: ", newCookie);
+  });
+  Models.User.updateUser(req.user.id, req.body.updatedUser).then(() => {
+    res.status(200).json(req.body.updatedUser);
   });
 });
 

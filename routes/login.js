@@ -42,9 +42,12 @@ router.post('/',
         req.login(req.user, (err) => {
           console.log("successfull login");
         });
-        const serverResponse = { 
-          success: true, 
-          admin: { pseudo: req.user.dataValues.pseudo },
+        const serverResponse = {
+          firstName: req.user.firstName,
+          lastName: req.user.lastName,
+          pseudo: req.user.pseudo,
+          email: req.user.email,
+          photo: req.user.photo,
         };
         res.json(serverResponse);
     }
@@ -54,7 +57,13 @@ router.post('/',
 
 router.get('/check', (req, res) => {
   if (req.isAuthenticated()) {
-    res.json(true);
+    res.json({
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      pseudo: req.user.pseudo,
+      email: req.user.email,
+      photo: req.user.photo,
+    });
   } else {
     res.status(401).json({ message: 'Not logged in' });
   }

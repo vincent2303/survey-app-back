@@ -35,12 +35,7 @@ router.use(function (req, res, next) {
 // Un administrateur peut ajouter un autre administrateur :
 // Les attributs de l'admin sont dans le body de la requète
 // TODO : Prendre en compte le cas où il y a une erreure au cours de la création de l'admin'
-// Logout the session
-
-router.get('/logout', function (req, res) {
-  req.session.destroy();
-  res.send("User logged out");
-}); // Routes relatives a la gestion des admins et des users
+// Routes relatives a la gestion des admins et des users
 
 /* router.post('/createAdmin', (req, res) => {
   console.log(`creating admin ${req.body.pseudo}`);

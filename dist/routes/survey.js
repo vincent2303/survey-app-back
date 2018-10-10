@@ -87,6 +87,17 @@ router.post('/changeFreq', userCheckToken, function (req, res) {
     }));
   }
 });
+router.get('/getMailIntensity', userCheckToken, function (req, res) {
+  Models.User.findOne({
+    where: {
+      id: req.user.user_id
+    }
+  }).then(function (user) {
+    res.status(200).json({
+      mailIntensity: user.dataValues.mailIntensity
+    });
+  });
+});
 router.use(function (err, req, res, next) {
   console.log("error: ", err.name);
 

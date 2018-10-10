@@ -34,13 +34,6 @@ router.use((req, res, next) => {
 // Les attributs de l'admin sont dans le body de la requète
 // TODO : Prendre en compte le cas où il y a une erreure au cours de la création de l'admin'
 
-// Logout the session
-
-router.get('/logout', (req, res) => {
-  req.session.destroy();
-  res.send("User logged out");
-});
-
 // Routes relatives a la gestion des admins et des users
 /* router.post('/createAdmin', (req, res) => {
   console.log(`creating admin ${req.body.pseudo}`);

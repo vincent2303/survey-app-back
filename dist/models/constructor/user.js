@@ -77,6 +77,38 @@ var userConstructor = function userConstructor(sequelize) {
         });
       });
     });
+  };
+
+  User.updateUser = function (id, data) {
+    return new Promise(function (resolve) {
+      var salt = crypto.randomBytes(16).toString('hex');
+
+      if (data.password) {
+        User.update({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          pseudo: data.pseudo,
+          salt: salt,
+          hash: crypto.pbkdf2Sync(data.password, salt, 1000, 64, 'sha512').toString('hex')
+        }, {
+          where: {
+            id: id
+          }
+        }).then(resolve());
+      } else {
+        User.update({
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          pseudo: data.pseudo
+        }, {
+          where: {
+            id: id
+          }
+        }).then(resolve());
+      }
+    });
   }; // Instance methods
 
 
