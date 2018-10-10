@@ -35,13 +35,13 @@ router.post('/updateUser', (req, res) => {
   });
 });
 
-router.get('getToken', (req, res) => {
+router.get('/getToken', (req, res) => {
   Models.Sondage.findOne({ where: { current: true } }).then((sondage) => {
     Models.User.findOne({ where: { id: req.user.id } })
       .then((user) => {
         const sondage_id = sondage.dataValues.id;
         const token = user.generateJwt(sondage_id);
-        console.log(token);
+        res.status(200).send({ token: token });
       });
   });
 });
