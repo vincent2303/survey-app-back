@@ -54,6 +54,16 @@ router.post('/', passport.authenticate('local', {
       };
       res.json(serverResponse);
   }
+}); // Check if a user is logged in
+
+router.get('/check', function (req, res) {
+  if (req.isAuthenticated()) {
+    res.json(true);
+  } else {
+    res.status(401).json({
+      message: 'Not logged in'
+    });
+  }
 }); // Logout the session
 
 router.get('/logout', function (req, res) {

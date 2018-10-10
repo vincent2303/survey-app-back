@@ -50,6 +50,15 @@ router.post('/',
     }
   });
 
+// Check if a user is logged in
+
+router.get('/check', (req, res) => {
+  if (req.isAuthenticated()) {
+    res.json(true);
+  } else {
+    res.status(401).json({ message: 'Not logged in' });
+  }
+});
 // Logout the session
 
 router.get('/logout', (req, res) => {
