@@ -21,15 +21,21 @@ var remplissageConstructor = function remplissageConstructor(sequelize) {
       allowNull: false,
       type: Sequelize.DATEONLY
     }
+  }, {
+    timestamps: false
   });
 
   Remplissage.addRemplissage = function (id, sondage_id, user_id, date) {
-    Remplissage.sync().then(function () {
-      Remplissage.create({
-        id: id,
-        user_id: user_id,
-        sondage_id: sondage_id,
-        date: date
+    return new Promise(function (resolve) {
+      Remplissage.sync().then(function () {
+        Remplissage.create({
+          id: id,
+          user_id: user_id,
+          sondage_id: sondage_id,
+          date: date
+        }).then(function () {
+          resolve();
+        });
       });
     });
   };

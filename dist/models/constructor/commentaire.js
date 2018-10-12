@@ -23,15 +23,21 @@ var commentaireConstructor = function commentaireConstructor(sequelize) {
       allowNull: false,
       type: Sequelize.STRING
     }
+  }, {
+    timestamps: false
   });
 
   Commentaire.addCommentaire = function (remplissage_id, thematique_id, commentaire) {
-    Commentaire.sync().then(function () {
-      Commentaire.create({
-        id: id_generator(),
-        remplissage_id: remplissage_id,
-        thematique_id: thematique_id,
-        commentaire: commentaire
+    return new Promise(function (resolve) {
+      Commentaire.sync().then(function () {
+        Commentaire.create({
+          id: id_generator(),
+          remplissage_id: remplissage_id,
+          thematique_id: thematique_id,
+          commentaire: commentaire
+        }).then(function () {
+          resolve();
+        });
       });
     });
   };

@@ -15,13 +15,25 @@ var thematiqueConstructor = function thematiqueConstructor(sequelize) {
       allowNull: false,
       type: Sequelize.STRING
     }
+  }, {
+    timestamps: false
   });
 
   Thematique.addThematique = function (name) {
-    Thematique.sync().then(function () {
-      Thematique.create({
-        id: id_generator(),
-        name: name
+    // id optionnal
+    return new Promise(function (resolve) {
+      Thematique.sync().then(function () {
+        Thematique.findOrCreate({
+          where: {
+            name: name
+          },
+          defaults: {
+            name: name,
+            id: id_generator()
+          }
+        }).spread(function (thematique) {
+          resolve(thematique.dataValues);
+        });
       });
     });
   };

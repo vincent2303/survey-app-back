@@ -11,69 +11,25 @@ router.use(express.urlencoded({
   extended: false
 }));
 
-var morgan = require('morgan'); // Authentification
+var morgan = require('morgan'); // Récupère les models
 
 
-var passport = require('passport');
+var Models = require('../models/index');
 
-var adminLoginStrategy = require('../passport-config/adminStrategy');
-
-passport.use(adminLoginStrategy);
-passport.initialize(); // App variables
-
-var env_var = require('../variables'); // Authentification controllers
-
-
-var checkToken = require('../controllers/adminCheckToken'); // Récupère les models
-
-
-var Models = require('../models/index'); // Récupère les fonctions de recherche de données
-
-
-var Data = require('../models/dataFetch');
-
-router.use(morgan('dev')); // L'administrateur peut poster un User pour l'ajouter dans la DB
-// Les attributs de l'utilisateurs sont dans le body de la requête
-
-router.post('/createUser', function (req, res) {
-  // On vérifie que les données minmums pour créer un utilisateur sont bien présentes
-  if (!req.body.firstName || !req.body.lastName || !req.body.email) {
-    console.log("/!\\ ERROR : The body of the create user request doesnt contain first name or last name or email !");
-    res.status(400).send("Bad Request : The body of the create user request doesnt contain first name or last name or email ! ");
-  } else {
-    console.log("creating user ".concat(req.body.firstName, " ").concat(req.body.lastName));
-    Models.User.addUser(req.body.firstName, req.body.lastName, req.body.email, function (id) {
-      res.status(200).send({
-        id: id,
-        firstName: req.body.firstName,
-        lastName: req.body.lastName,
-        email: req.body.email
-      });
+router.use(morgan('dev'));
+router.use(function (req, res, next) {
+  if (req.url === '/login') {
+    next();
+  } else if (!req.isAuthenticated()) {
+    res.status(401).json({
+      message: 'Not logged in'
     });
-  }
-});
-router.post('/login', passport.authenticate('local', {
-  session: false
-}), function (req, res) {
-  switch (req.user) {
-    case "wrongUser":
-      res.status(460).send("Wrong username");
-      break;
-
-    case "wrongPass":
-      res.status(461).send("Wrong username");
-      break;
-
-    default:
-      console.log("Correct authentification: ", req.user.dataValues.pseudo);
-      var serverResponse = {
-        success: true,
-        admin: {
-          pseudo: req.user.dataValues.pseudo
-        },
-        token: req.user.generateJwt()
-      };
-      res.json(serverResponse);
+  } else if (req.user.auth !== 1) {
+    res.status(401).json({
+      message: 'Not authorized'
+    });
+  } else {
+    next();
   }
 }); // --------- Routes protegées par token -------------
 // Un administrateur peut ajouter un autre administrateur :
@@ -81,40 +37,41 @@ router.post('/login', passport.authenticate('local', {
 // TODO : Prendre en compte le cas où il y a une erreure au cours de la création de l'admin'
 // Routes relatives a la gestion des admins et des users
 
-router.post('/createAdmin', checkToken, function (req, res) {
-  console.log("creating admin ".concat(req.body.pseudo));
-  console.log(req.body); // On vérifie que les données minmums pour créer un utilisateur sont bien présentes
-
+/* router.post('/createAdmin', (req, res) => {
+  console.log(`creating admin ${req.body.pseudo}`);
+  // On vérifie que les données minmums pour créer un utilisateur sont bien présentes
   if (!req.body.pseudo || !req.body.mp) {
     console.log("/!\\ ERROR : The body of the create admin request doesnt contain pseudo or mp !");
     res.status(400).send("Bad Request : The body of the create admin request doesnt contain pseudo or mp ! ");
   } else {
-    Models.Admin.addAdmin(req.body.pseudo, req.body.mp, function () {
-      console.log("Added admin: ".concat(req.body.pseudo));
-      res.status(200).send("User ".concat(req.body.firstName, " ").concat(req.body.lastName, " created"));
+    Models.Admin.addAdmin(req.body.pseudo, req.body.mp, Date.now()).then(() => {
+      console.log(`Added admin: ${req.body.pseudo}`);
+      res.status(200).send(`Admin ${req.body.pseudo} created`);
     });
   }
-});
-router.post('/csvPost', checkToken, function (req, res) {
+}); */
+
+router.post('/csvPost', function (req, res) {
+  var promises = [];
   req.body.userList.forEach(function (user) {
-    Models.User.addUser(user.firstName, user.lastName, user.email, function () {});
+    promises.push(Models.User.addUser(user.firstName, user.lastName, user.email));
   });
-  res.json("user list added");
+  Promise.all(promises).then(res.status(200).json("User list added"));
 });
-router.post('/singlePost', checkToken, function (req, res) {
-  var user = req.body.user;
-  Models.User.addUser(user.firstName, user.lastName, user.email, function () {
-    res.send("single user added : ", user.email);
+router.post('/singlePost', function (req, res) {
+  Models.User.addUser(req.body.firstName, req.body.lastName, req.body.email, req.body.pseudo, req.body.password, req.body.auth).then(function () {
+    res.status(200).send("New user added");
+    console.log("New user added: ", req.body.pseudo);
   });
 }); // Route relative à l'affichage et la creation de sondage
 
-router.get('/getSondage', checkToken, function (req, res) {
-  Models.Admin.findOne({
+router.get('/getSondage', function (req, res) {
+  Models.User.findOne({
     where: {
       id: req.user.id
     }
-  }).then(function (admin) {
-    admin.getSondage(function (sondageList) {
+  }).then(function (user) {
+    user.getSondage().then(function (sondageList) {
       console.log("Sent all sondages to client");
       res.status(200).json(sondageList);
     });
@@ -139,77 +96,65 @@ router.get('/getSondage', checkToken, function (req, res) {
   }
 */
 
-router.post('/postSondage', checkToken, function (req, res) {
-  Models.Admin.findOne({
+router.post('/postSondage', function (req, res) {
+  Models.User.findOne({
     where: {
       id: req.user.id
     }
-  }).then(function (admin) {
-    admin.createSondage(req.body, function () {
+  }).then(function (user) {
+    user.createSondage(req.body).then(function () {
       console.log("New sondage created: ", req.body.name);
       res.status(200).send("New sondage created");
     });
   });
 });
-router.post('/changeNextSondage', checkToken, function (req, res) {
-  console.log(req.body);
-
+router.post('/changeNextSondage', function (req, res) {
   if (!req.body) {
     console.log("/!\\ ERROR : Inccorect body");
     res.status(400).send("Bad Request : The body doesnt contain next_sondage ! ");
   } else {
-    env_var.next_sondage = req.body.id;
-    console.log("Changed the sondage to sondage number: ", req.body);
-    res.status(200).json(env_var.next_sondage);
+    Models.Sondage.update({
+      current: false
+    }, {
+      where: {
+        current: true
+      }
+    }).then(function () {
+      Models.Sondage.update({
+        current: true
+      }, {
+        where: {
+          id: req.body.id
+        }
+      }).then(function (sondage) {
+        console.log("Changed the sondage to sondage: ", req.body.name);
+        res.status(200).json(sondage.dataValues);
+      });
+    });
   }
 }); // Route relative aux statisques
 
-router.get('/numberRemplissages', checkToken, function (req, res) {
-  Data.getNumberRemplissages(function (count) {
-    console.log("Fetching total number of Remplissage");
-    res.status(200).json(count);
+router.get('/getCommentaireJour/:jour', function (req, res) {
+  Models.User.findById(req.user.id).then(function (user) {
+    user.getCommentairesJour(req.params.jour).then(function (comments) {
+      console.log("Fetching all Commentaires on: ", req.params.jour);
+      res.status(200).json(comments);
+    });
   });
-});
-router.get('/numberRemplissagesJour/:jour', checkToken, function (req, res) {
-  Data.getNumberRemplissagesJour(req.params.jour, function (count) {
-    console.log("Fetching total number of Remplissage on: ", req.params.jour);
-    res.status(200).json(count);
-  });
-});
-router.get('/getCommentaireJour/:jour', checkToken, function (req, res) {
-  Data.getCommentairesJour(req.params.jour, function (comments) {
-    console.log("Fetching all Commentaires on: ", req.params.jour);
-    res.status(200).json(comments);
-  });
-});
-router.get('/numberReponses', checkToken, function (req, res) {
-  Data.getNumberReponses(function (count) {
-    console.log("Fetching total number of Reponse");
-    res.status(200).json(count);
-  });
-});
-router.get('/numberReponsesJour/:jour', checkToken, function (req, res) {
-  Data.getNumberReponsesJour(req.params.jour, function (count) {
-    res.status(200).json(count);
-    console.log("Fetching total number of Reponse on: ", req.params.jour);
-  });
-  res.json("ok");
 });
 router.get("/generalStatistics", function (req, res) {
-  Models.Admin.findById('fake_admin_id').then(function (admin) {
-    admin.getStatistics(function (statisticTab) {
+  Models.User.findById(req.user.id).then(function (user) {
+    user.getStatistics(function (statisticTab) {
       res.json(statisticTab);
     });
   });
 });
-router.use(function (err, req, res, next) {
-  console.log("error: ", err.name);
-
-  if (err.name === 'UnauthorizedError') {
-    res.status(401).json({
-      message: 'Unauthorized. Invalid token!'
+router.get("/specificStatistics/:year/:month/:day", function (req, res) {
+  Models.User.findById(req.user.id).then(function (user) {
+    user.getStatisticsSpecific(req.params).then(function (sondageResult) {
+      res.json(sondageResult);
     });
-  }
+  });
 });
 module.exports = router;
 //# sourceMappingURL=admin.js.map

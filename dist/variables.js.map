@@ -1,1 +1,0 @@
-{"version":3,"sources":["../variables.js"],"names":["env_var","next_sondage","module","exports"],"mappings":";;AAAA,IAAIA,OAAO,GAAG;AACZC,EAAAA,YAAY,EAAE;AADF,CAAd;AAIAC,MAAM,CAACC,OAAP,GAAiBH,OAAjB","sourcesContent":["let env_var = {\n  next_sondage: 0,\n};\n  \nmodule.exports = env_var;"],"file":"variables.js"}

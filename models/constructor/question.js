@@ -24,16 +24,22 @@ const questionConstructor = function (sequelize) {
       allowNull: false,
       type: Sequelize.STRING,
     },
+  }, {
+    timestamps: false,
   });
   Question.addQuestion = function (sondage_id, thematique_id, valeur, keyWord) {
-    Question.sync().then(() => {
-      Question.create({
-        id: id_generator(),
-        thematique_id: thematique_id,
-        sondage_id: sondage_id,
-        valeur: valeur,
-        keyWord: keyWord,
-      }); 
+    return new Promise(function (resolve) {
+      Question.sync().then(() => {
+        Question.create({
+          id: id_generator(),
+          thematique_id: thematique_id,
+          sondage_id: sondage_id,
+          valeur: valeur,
+          keyWord: keyWord,
+        }).then(() => {
+          resolve();
+        }); 
+      });
     });
   };
   return Question;

@@ -12,12 +12,18 @@ const thematiqueConstructor = function (sequelize) {
       allowNull: false,
       type: Sequelize.STRING,
     },
+  }, {
+    timestamps: false,
   });
-  Thematique.addThematique = function (name) {
-    Thematique.sync().then(() => {
-      Thematique.create({
-        id: id_generator(),
-        name: name,
+  Thematique.addThematique = function (name) { // id optionnal
+    return new Promise(function (resolve) {
+      Thematique.sync().then(() => {
+        Thematique.findOrCreate({ 
+          where: { name: name },
+          defaults: { name: name, id: id_generator() },
+        }).spread((thematique) => {
+          resolve(thematique.dataValues);
+        });
       });
     });
   };

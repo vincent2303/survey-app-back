@@ -2,7 +2,10 @@
 
 var express = require('express');
 
-var router = express.Router(); // Le body Parser permet d'acceder aux variable envoyés dans le body
+var router = express.Router();
+
+var fs = require('fs'); // Le body Parser permet d'acceder aux variable envoyés dans le body
+
 
 var bodyParser = require('body-parser');
 
@@ -13,83 +16,74 @@ router.use(express.urlencoded({
 
 var morgan = require('morgan');
 
-router.use(morgan('dev'));
+router.use(morgan('dev')); // Récupère les models
 
-var Models = require('../models/index');
+var Models = require('../models');
 
-var userCheckToken = require('../controllers/userCheckToken'); // front send un get avec header
-
-
-router.get('/getSondage', userCheckToken, function (req, res) {
-  console.log("info: ", req.user);
-  Models.User.findOne({
-    where: {
-      id: req.user.user_id
-    }
-  }).then(function (user) {
-    user.findSondage(req, function (serverResponse) {
-      console.log("Sending current sondage to front");
-      res.status(200).json(serverResponse);
-    });
-  });
-}); // front send un post avec header et dans le body un answered_questions (cf index.js)
-
-router.post('/answerSondage', userCheckToken, function (req, res) {
-  var _req$user = req.user,
-      user_id = _req$user.user_id,
-      sondage_id = _req$user.sondage_id,
-      remplissage_id = _req$user.remplissage_id;
-  Models.Remplissage.findById(remplissage_id).then(function (remplissage) {
-    if (remplissage) {
-      Models.User.findById(user_id).then(function (user) {
-        var sondage = {
-          sondage_id: sondage_id,
-          remplissage_id: remplissage_id,
-          answered_questions: req.body.answered_questions,
-          answered_commentaires: req.body.answered_commentaires
-        };
-        user.updateSondage(sondage);
-        console.log(req.user.firstName, " already answered and changed his answers");
-        res.status(200).send({
-          msg: "Merci d'avoir modifier votre reponse !"
-        });
-      });
-    } else {
-      Models.User.findById(user_id).then(function (user) {
-        var sondage = {
-          sondage_id: sondage_id,
-          remplissage_id: remplissage_id,
-          answered_questions: req.body.answered_questions,
-          answered_commentaires: req.body.answered_commentaires
-        };
-        user.answerSondage(sondage);
-        console.log("New remplissage submitted by: ", req.user.firstName);
-        res.status(200).send({
-          msg: "Merci d'avoir repondu au sondage !"
-        });
-      });
-    }
-  });
-});
-router.post('/changeFreq', userCheckToken, function (req, res) {
-  if (typeof req.body.newIntensity === "number") {
-    Models.User.update({
-      mailIntensity: req.body.newIntensity
-    }, {
-      where: req.body.user_id
-    }).then(res.send({
-      msg: "Mail Intensity changed"
-    }));
-  }
-});
-router.use(function (err, req, res, next) {
-  console.log("error: ", err.name);
-
-  if (err.name === 'UnauthorizedError') {
+router.use(function (req, res, next) {
+  if (!req.isAuthenticated() && req.url !== '/login') {
     res.status(401).json({
-      message: 'Unauthorized. Invalid token!'
+      message: 'Not logged in'
     });
+  } else {
+    next();
   }
+}); // --------- Routes protegées-------------
+
+router.post('/updateUser', function (req, res) {
+  var newCookie = Object.assign(req.user, req.body.updatedUser);
+  req.login(newCookie, function (err) {
+    console.log("Modified cookie: ", newCookie);
+  });
+  Models.User.updateUser(req.user.id, req.body.updatedUser).then(function () {
+    res.status(200).json(req.body.updatedUser);
+  });
+});
+router.post('/updatePhoto', function (req, res) {
+  var base64Data = req.body.photo.replace(/^data:image\/jpeg;base64,/, "");
+  console.log(base64Data);
+  fs.writeFile("./public/user/photo/".concat(req.user.pseudo), base64Data, 'base64', function (err) {
+    if (err) {
+      console.log(err);
+    } else {
+      Models.User.update({
+        photo: "/user/photo/".concat(req.user.pseudo, ".jpg")
+      }, {
+        where: {
+          id: req.user.id
+        }
+      }).then(function () {
+        var newCookie = Object.assign(req.user, {
+          photo: "/user/photo/".concat(req.user.pseudo)
+        });
+        req.login(newCookie, function (err) {
+          console.log("Modified cookie: ", newCookie);
+        });
+        res.status(200).json({
+          photo: "/user/photo/".concat(req.user.pseudo)
+        });
+      });
+    }
+  });
+});
+router.get('/getToken', function (req, res) {
+  Models.Sondage.findOne({
+    where: {
+      current: true
+    }
+  }).then(function (sondage) {
+    Models.User.findOne({
+      where: {
+        id: req.user.id
+      }
+    }).then(function (user) {
+      var sondage_id = sondage.dataValues.id;
+      var token = user.generateJwt(sondage_id);
+      res.status(200).send({
+        token: token
+      });
+    });
+  });
 });
 module.exports = router;
 //# sourceMappingURL=user.js.map

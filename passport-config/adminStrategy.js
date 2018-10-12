@@ -1,24 +1,24 @@
 const LocalStrategy = require('passport-local').Strategy;
 
-const Admin = require("../models/index").Admin;
+const User = require("../models/index").User;
 
-const adminLoginStrategy = new LocalStrategy(
+const loginStrategy = new LocalStrategy(
   {
     usernameField: "pseudo",
   },
   ((pseudo, password, done) => {
-    Admin.findOne({ where: { pseudo: pseudo } }).then((admin) => {
-      if (!admin) {
+    User.findOne({ where: { pseudo: pseudo } }).then((user) => {
+      if (!user) {
         return done(null, "wrongUser", { message: 'Incorrect username.' });
       }
-      if (!admin.validPassword(password)) {
+      if (!user.validPassword(password)) {
         return done(null, "wrongPass", { message: 'Incorrect password.' });
       }
-      admin.salt = undefined;
-      admin.hash = undefined;
-      return done(null, admin);
+      user.salt = undefined;
+      user.hash = undefined;
+      return done(null, user);
     });
   }),
 );
 
-module.exports = adminLoginStrategy;
+module.exports = loginStrategy;
